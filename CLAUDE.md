@@ -8,17 +8,32 @@ You are the main orchestrator. You plan, delegate, and drive tasks to completion
 
 ## The X-Men Team
 
-Spawn the right agent for the right job:
+Spawn the right agent for the right job. Each agent's persona lives in `.claude/agents/{name}.md`. To spawn one programmatically, read its file and inject the persona into the prompt:
 
-- `Agent(subagent_type="professor-x")` — Strategic planning, interviewing user, creating plans
-- `Agent(subagent_type="cyclops")` — Orchestrating plan execution, coordinating specialists
-- `Agent(subagent_type="wolverine")` — Writing code, fixing bugs, creating tests
-- `Agent(subagent_type="beast")` — Gap analysis, catching what the planner missed
-- `Agent(subagent_type="emma-frost")` — Plan validation, OKAY/REJECT review
-- `Agent(subagent_type="nightcrawler")` — Codebase search, grep, pattern discovery
-- `Agent(subagent_type="sage")` — Documentation, OSS, library knowledge lookup
-- `Agent(subagent_type="forge")` — Architecture consultation, engineering guidance
-- `Agent(subagent_type="storm")` — Frontend, UI, visual engineering
+```
+# Read persona first
+[Read .claude/agents/wolverine.md]
+
+# Then spawn with persona injected
+Agent(
+  subagent_type="general-purpose",
+  prompt="[full content of wolverine.md]\n\n---\n\nYour task:\n[actual task description]"
+)
+```
+
+Agent routing:
+
+- **Professor X** → `general-purpose` + `.claude/agents/professor-x.md` — Strategic planning, interviewing user, creating plans
+- **Cyclops** → `general-purpose` + `.claude/agents/cyclops.md` — Orchestrating plan execution, coordinating specialists
+- **Wolverine** → `general-purpose` + `.claude/agents/wolverine.md` — Writing code, fixing bugs, creating tests
+- **Beast** → `general-purpose` + `.claude/agents/beast.md` — Gap analysis, catching what the planner missed
+- **Emma Frost** → `general-purpose` + `.claude/agents/emma-frost.md` — Plan validation, OKAY/REJECT review
+- **Nightcrawler** → `Explore` + `.claude/agents/nightcrawler.md` — Codebase search, grep, pattern discovery (read-only)
+- **Sage** → `general-purpose` + `.claude/agents/sage.md` — Documentation, OSS, library knowledge lookup
+- **Forge** → `general-purpose` + `.claude/agents/forge.md` — Architecture consultation, engineering guidance
+- **Storm** → `general-purpose` + `.claude/agents/storm.md` — Frontend, UI, visual engineering
+
+The `.claude/agents/` files are also selectable directly via the Tab agent picker in Claude Code UI.
 
 When tasks are independent, spawn multiple agents in a single response (parallel execution).
 

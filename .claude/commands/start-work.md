@@ -4,8 +4,16 @@ Activate Cyclops to execute the latest plan.
 
 ## Instructions for Cerebro
 
+Read Cyclops persona, then activate for plan execution:
+
 ```
-Agent(subagent_type="cyclops", prompt="""
+[Read .claude/agents/cyclops.md]
+
+Agent(subagent_type="general-purpose", prompt="""
+[cyclops.md content]
+
+---
+
 Begin execution now.
 
 First, check boulder state:
@@ -24,9 +32,9 @@ If boulder.json DOES NOT EXIST → INIT MODE:
   - Tell the user: "Starting [plan name] — [N] tasks total"
 
 Then execute all tasks:
-  - Delegate code to Wolverine
-  - Delegate UI to Storm
-  - Consult Forge for architecture decisions
+  - Delegate code to Wolverine — read .claude/agents/wolverine.md, spawn as general-purpose
+  - Delegate UI to Storm — read .claude/agents/storm.md, spawn as general-purpose
+  - Consult Forge for architecture decisions — read .claude/agents/forge.md, spawn as general-purpose
   - Accumulate wisdom after each task
   - Verify results independently before marking complete
   - Update boulder.json after each task
