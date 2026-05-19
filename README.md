@@ -1,4 +1,4 @@
-# hkt-claude — Cerebro Orchestration Template
+# Claude X-Men — Cerebro Orchestration Template
 
 A self-contained Claude Code multi-agent orchestration template. Copy it into any project and get a full 9-agent AI team with planning, execution, enforcement, and session continuity — all themed around the X-Men.
 
