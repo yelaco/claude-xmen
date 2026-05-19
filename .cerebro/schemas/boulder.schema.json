@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Cerebro Boulder Execution State",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "active_plan",
+    "plan_name",
+    "status",
+    "risk_level",
+    "started_at",
+    "updated_at",
+    "completed_tasks",
+    "remaining_tasks",
+    "approval_gates",
+    "verification_history",
+    "current_task"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "active_plan": {
+      "type": "string",
+      "pattern": "^\\.cerebro/plans/.+\\.md$"
+    },
+    "plan_name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": ["not_started", "in_progress", "blocked", "completed"]
+    },
+    "risk_level": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH"]
+    },
+    "started_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "updated_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "completed_tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/task_ref"
+      }
+    },
+    "remaining_tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/task_ref"
+      }
+    },
+    "approval_gates": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/approval_gate"
+      }
+    },
+    "verification_history": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/verification_entry"
+      }
+    },
+    "current_task": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/task_ref"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "task_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "owner", "risk", "approval_gate"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owner": {
+          "type": "string",
+          "enum": ["Wolverine", "Storm", "Cyclops", "Forge consultation"]
+        },
+        "risk": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH"]
+        },
+        "approval_gate": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "approval_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "status", "decided_at", "decision_by", "notes"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "approved", "rejected"]
+        },
+        "decided_at": {
+          "type": ["string", "null"]
+        },
+        "decision_by": {
+          "type": ["string", "null"]
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "verification_entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["task_id", "command", "result", "verified_at", "notes"],
+      "properties": {
+        "task_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "command": {
+          "type": "string",
+          "minLength": 1
+        },
+        "result": {
+          "type": "string",
+          "enum": ["PASS", "FAIL", "BLOCKED"]
+        },
+        "verified_at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

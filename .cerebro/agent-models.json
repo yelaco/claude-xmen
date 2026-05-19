@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "default_model": "sonnet",
+  "models": {
+    "professor-x": "opus",
+    "beast": "sonnet",
+    "emma-frost": "opus",
+    "cyclops": "sonnet",
+    "wolverine": "sonnet",
+    "forge": "opus",
+    "nightcrawler": "haiku",
+    "sage": "haiku",
+    "storm": "sonnet"
+  },
+  "notes": {
+    "aliases": "Use Claude Code model aliases such as opus, sonnet, haiku, default, or a full model name supported by your environment.",
+    "override": "CLAUDE_CODE_SUBAGENT_MODEL overrides this map for all subagents when set.",
+    "fallback": "If an agent is missing from models, use default_model."
+  }
+}
