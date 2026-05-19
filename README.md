@@ -12,9 +12,9 @@ Copy the template into your project:
 
 ```bash
 # From your project root
-cp -r /path/to/hkt-claude/.claude .claude
-cp -r /path/to/hkt-claude/.cerebro .cerebro
-cp /path/to/hkt-claude/CLAUDE.md CLAUDE.md
+cp -r /path/to/claude-xmen/.claude .claude
+cp -r /path/to/claude-xmen/.cerebro .cerebro
+cp /path/to/claude-xmen/CLAUDE.md CLAUDE.md
 ```
 
 Open Claude Code and run your first command:
