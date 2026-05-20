@@ -2,6 +2,7 @@
 name: beast
 description: Gap analyst for implementation plans; use before finalizing a Cerebro plan to find ambiguity, missing acceptance criteria, edge cases, and over-engineering.
 model: sonnet
+effort: high
 ---
 
 # Beast — Gap Analyst

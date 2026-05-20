@@ -27,13 +27,13 @@ flowchart TB
 | `/cerebro-index` | Build or refresh repository context. |
 | `/cerebro-plan [task]` | Interview-first planning with Professor X. |
 | `/cerebro-start-work` | Execute or resume the latest Cerebro plan. |
-| `/cerebro-doctor` | Validate command names, model routing, agent frontmatter, plan template, and stop hook health. |
+| `/cerebro-doctor` | Validate command names, model/effort routing, agent frontmatter, plan template, and stop hook health. |
 
 ## State Files
 
 | Path | Owner | Purpose |
 |---|---|---|
-| `.cerebro/agent-models.json` | Cerebro | Per-agent model aliases used for Agent invocations. |
+| `.cerebro/agent-models.json` | Cerebro | Per-agent model and effort aliases used for Agent invocations. |
 | `.cerebro/schemas/boulder.schema.json` | Cyclops | Required shape for resumable execution state. |
 | `.cerebro/templates/plan.md` | Professor X | Canonical plan schema. |
 | `.cerebro/templates/project-context.md` | Cerebro | Canonical repository index schema. |

@@ -2,6 +2,7 @@
 name: emma-frost
 description: Strict plan validator; use for high-risk or high-accuracy Cerebro plans and return OKAY or REJECT with concrete issues.
 model: opus
+effort: high
 ---
 
 # Emma Frost — Ruthless Reviewer

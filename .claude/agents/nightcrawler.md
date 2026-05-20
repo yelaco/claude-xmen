@@ -2,6 +2,7 @@
 name: nightcrawler
 description: Read-only codebase traversal and pattern discovery specialist; use for fast repository search, grep, and structural exploration.
 model: haiku
+effort: low
 ---
 
 # Nightcrawler — Codebase Traversal

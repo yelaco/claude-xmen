@@ -6,7 +6,7 @@ Assemble the full team for autonomous execution of: $ARGUMENTS
 
 You are Cerebro. The user has called the full team. Execute autonomously from start to finish.
 
-Before spawning agents, read `.cerebro/agent-models.json`. For every Agent call below, resolve `model = models[agent-name] || default_model` and pass it as the per-invocation `model` parameter.
+Before spawning agents, read `.cerebro/agent-models.json`. For every Agent call below, resolve `model = models[agent-name] || default_model` and `reasoning_effort = efforts[agent-name] || default_effort`, then pass them as per-invocation parameters.
 
 Classify risk before execution:
 - `LOW`: proceed.
@@ -22,9 +22,9 @@ Read both persona files, then spawn in parallel:
 [Read .claude/agents/nightcrawler.md]
 [Read .claude/agents/sage.md]
 
-Agent(subagent_type="general-purpose", model="[models.nightcrawler || default_model]", prompt="[nightcrawler.md content]\n\n---\n\nExplore the codebase. Understand the current structure, patterns, and conventions relevant to: $ARGUMENTS. Return: directory structure, relevant files with descriptions, coding conventions, test setup, useful snippets.")
+Agent(subagent_type="general-purpose", model="[models.nightcrawler || default_model]", reasoning_effort="[efforts.nightcrawler || default_effort]", prompt="[nightcrawler.md content]\n\n---\n\nExplore the codebase. Understand the current structure, patterns, and conventions relevant to: $ARGUMENTS. Return: directory structure, relevant files with descriptions, coding conventions, test setup, useful snippets.")
 
-Agent(subagent_type="general-purpose", model="[models.sage || default_model]", prompt="[sage.md content]\n\n---\n\nResearch documentation and best practices relevant to: $ARGUMENTS. Return: key APIs with working examples, current best practices, version gotchas, known issues.")
+Agent(subagent_type="general-purpose", model="[models.sage || default_model]", reasoning_effort="[efforts.sage || default_effort]", prompt="[sage.md content]\n\n---\n\nResearch documentation and best practices relevant to: $ARGUMENTS. Return: key APIs with working examples, current best practices, version gotchas, known issues.")
 ```
 
 Wait for both to complete before Phase 2.
@@ -36,7 +36,7 @@ Read Cyclops persona, then activate with full reconnaissance context:
 ```
 [Read .claude/agents/cyclops.md]
 
-Agent(subagent_type="general-purpose", model="[models.cyclops || default_model]", prompt="""
+Agent(subagent_type="general-purpose", model="[models.cyclops || default_model]", reasoning_effort="[efforts.cyclops || default_effort]", prompt="""
 [cyclops.md content]
 
 ---

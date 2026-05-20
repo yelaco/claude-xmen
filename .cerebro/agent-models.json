@@ -1,6 +1,7 @@
 {
   "version": 1,
   "default_model": "sonnet",
+  "default_effort": "medium",
   "models": {
     "professor-x": "opus",
     "beast": "sonnet",
@@ -12,9 +13,21 @@
     "sage": "haiku",
     "storm": "sonnet"
   },
+  "efforts": {
+    "professor-x": "high",
+    "beast": "high",
+    "emma-frost": "high",
+    "cyclops": "medium",
+    "wolverine": "medium",
+    "forge": "high",
+    "nightcrawler": "low",
+    "sage": "low",
+    "storm": "medium"
+  },
   "notes": {
     "aliases": "Use Claude Code model aliases such as opus, sonnet, haiku, default, or a full model name supported by your environment.",
+    "effort": "Use reasoning effort aliases low, medium, or high. Use low for search/lookup agents, medium for implementation/orchestration, and high for planning/review/architecture.",
     "override": "CLAUDE_CODE_SUBAGENT_MODEL overrides this map for all subagents when set.",
-    "fallback": "If an agent is missing from models, use default_model."
+    "fallback": "If an agent is missing from models or efforts, use default_model or default_effort respectively."
   }
 }

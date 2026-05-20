@@ -32,10 +32,10 @@
 
 ## Architecture
 
-- `CLAUDE.md` — Cerebro identity, intent routing, model resolution, runtime rules, command list
+- `CLAUDE.md` — Cerebro identity, intent routing, model/effort resolution, runtime rules, command list
 - `.claude/agents/` — 9 specialist persona files with YAML frontmatter; directly Tab-selectable and injected programmatically
 - `.claude/commands/` — 5 slash command workflows: `cerebro-index`, `cerebro-plan`, `cerebro-start-work`, `cerebro-doctor`, `to-me-my-x-men`
-- `.cerebro/agent-models.json` — Per-agent model routing map; required before every Agent spawn
+- `.cerebro/agent-models.json` — Per-agent model and effort routing map; required before every Agent spawn
 - `.cerebro/templates/plan.md` — Canonical plan schema (Professor X writes to this format; Cyclops executes from it)
 - `.cerebro/templates/project-context.md` — Template for this file
 - `.cerebro/schemas/boulder.schema.json` — JSON Schema for `.cerebro/boulder.json` execution state
@@ -49,20 +49,21 @@
 
 - File organization: Claude Code behavior under `.claude/`; runtime state and templates under `.cerebro/`; docs under `docs/`
 - Naming: agent files match agent name in persona frontmatter; commands use `cerebro-` prefix except `/to-me-my-x-men`
-- Agent frontmatter: name, description, model fields required in each `.claude/agents/*.md`
+- Agent frontmatter: name, description, model, and effort fields required in each `.claude/agents/*.md`
 - Model tiers: `opus` for complex planning/review (Professor X, Emma Frost, Forge); `sonnet` for execution (Cyclops, Wolverine, Storm, Beast); `haiku` for lightweight search (Nightcrawler, Sage)
-- Agent spawning: always read `.cerebro/agent-models.json` first, resolve `model = models[agent-name] || default_model`, pass as `model=` to `Agent()`
+- Effort tiers: `high` for planning/review/architecture, `medium` for execution/orchestration/UI, and `low` for search/lookup
+- Agent spawning: always read `.cerebro/agent-models.json` first, resolve `model = models[agent-name] || default_model` and `reasoning_effort = efforts[agent-name] || default_effort`, then pass both to `Agent()` when supported
 - Parallel by default: Nightcrawler + Sage spawn simultaneously; independent Wolverine/Storm tasks spawn simultaneously
 - Task result envelope: workers report via `TASK_RESULT:` block (STATUS, TASK, SUMMARY, FILES CHANGED, TESTS RUN, VERIFICATION, LEARNINGS)
 - Wisdom accumulation: Cyclops extracts learnings after each task into `.cerebro/notepads/{plan-name}/`
 - Verification: Cyclops independently verifies task completion by reading files and running commands — never trusts worker self-report alone
 - Error handling: high-risk autonomous work asks user confirmation before proceeding
-- Testing: `/cerebro-doctor` validates command names, model routing, agent frontmatter, JSON schemas, stale references
+- Testing: `/cerebro-doctor` validates command names, model/effort routing, agent frontmatter, JSON schemas, stale references
 
 ## Risky Areas
 
 - Command namespace — stale built-in planning or start-work command references can collide with Claude Code built-ins; `/cerebro-doctor` catches this
-- Model routing drift — agent frontmatter models and `.cerebro/agent-models.json` must stay aligned; schema validation catches mismatches
+- Model/effort routing drift — agent frontmatter values and `.cerebro/agent-models.json` must stay aligned; doctor validation catches mismatches
 - Boulder state corruption — malformed `.cerebro/boulder.json` breaks resume behavior; validate against `boulder.schema.json` before use
 - Stale pending todos — `.cerebro/.pending-todos` with content blocks final responses permanently; manual cleanup may be needed if a session crashes
 - Approval gate enforcement — Cyclops must pause before delegating gated tasks; ignoring this voids approval semantics
@@ -81,8 +82,8 @@
 ## Read First (Priority Order)
 
 **Before any task:**
-1. `CLAUDE.md` — intent gate, agent roster, model routing, runtime rules
-2. `.cerebro/agent-models.json` — resolve model before every Agent spawn
+1. `CLAUDE.md` — intent gate, agent roster, model/effort routing, runtime rules
+2. `.cerebro/agent-models.json` — resolve model and reasoning effort before every Agent spawn
 3. `.cerebro/project-context.md` — project orientation
 
 **Before planning or execution:**

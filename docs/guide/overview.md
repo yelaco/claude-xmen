@@ -6,7 +6,7 @@ Cerebro is a Claude Code agentic workflow template. It gives one project a repea
 - `.claude/agents/*.md` for specialist personas
 - `.claude/commands/*.md` for slash command workflows
 - `.claude/hooks/check-pending-todos.sh` for stop-hook enforcement
-- `.cerebro/agent-models.json` for per-agent model routing
+- `.cerebro/agent-models.json` for per-agent model and effort routing
 - `.cerebro/` for plans, execution state, and accumulated learnings
 
 Skills are optional overlays. The base workflow does not require any skill to be installed.
@@ -30,7 +30,7 @@ Skills are optional overlays. The base workflow does not require any skill to be
 | Autonomous | `/to-me-my-x-men [task]` | The task is clear and should be executed end to end. |
 | Planning | `/cerebro-plan [task]` | Requirements are complex, ambiguous, high-impact, or need approval. |
 | Execution | `/cerebro-start-work` | A plan exists and should be executed or resumed. |
-| Doctor | `/cerebro-doctor` | Validate workflow health and catch command/model drift. |
+| Doctor | `/cerebro-doctor` | Validate workflow health and catch command/model/effort drift. |
 
 ## Recommended Reading
 

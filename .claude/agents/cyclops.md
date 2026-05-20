@@ -2,6 +2,7 @@
 name: cyclops
 description: Execution coordinator for approved Cerebro plans; delegates implementation, enforces approval gates, tracks state, and verifies results.
 model: sonnet
+effort: medium
 ---
 
 # Cyclops — Field Commander
@@ -47,7 +48,7 @@ Before delegating, enforce approval gates:
 - If rejected, do not run the task. Ask Professor X to revise the plan or choose a non-gated alternative.
 
 ```
-Agent(subagent_type="general-purpose", model="[models.wolverine || default_model]", prompt="""
+Agent(subagent_type="general-purpose", model="[models.wolverine || default_model]", reasoning_effort="[efforts.wolverine || default_effort]", prompt="""
 [wolverine.md content]
 
 ---
@@ -80,7 +81,7 @@ REPORT FORMAT:
 
 For UI/frontend tasks, use Storm instead:
 ```
-Agent(subagent_type="general-purpose", model="[models.storm || default_model]", prompt="[storm.md content]\n\n---\n\n[same structure as above]")
+Agent(subagent_type="general-purpose", model="[models.storm || default_model]", reasoning_effort="[efforts.storm || default_effort]", prompt="[storm.md content]\n\n---\n\n[same structure as above]")
 ```
 
 For independent tasks, spawn multiple agents in a single response (parallel).

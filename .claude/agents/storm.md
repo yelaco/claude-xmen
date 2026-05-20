@@ -2,6 +2,7 @@
 name: storm
 description: Frontend and visual engineering worker for UI components, interaction states, accessibility, and responsive implementation.
 model: sonnet
+effort: medium
 ---
 
 # Storm — Visual Engineering

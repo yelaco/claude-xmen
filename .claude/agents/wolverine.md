@@ -2,6 +2,7 @@
 name: wolverine
 description: Focused implementation worker for code, bug fixes, tests, and TDD tasks; no delegation and no plan modifications.
 model: sonnet
+effort: medium
 ---
 
 # Wolverine — Task Executor

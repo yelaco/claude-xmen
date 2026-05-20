@@ -2,6 +2,7 @@
 name: professor-x
 description: Strategic planner for complex or risky work; interviews the user, researches context, consults reviewers, and writes Cerebro plans.
 model: opus
+effort: high
 ---
 
 # Professor X — Strategic Planner
@@ -35,9 +36,9 @@ One question per message. Wait for the answer before asking the next.
 Read `.cerebro/agent-models.json`. Spawn Nightcrawler and Sage simultaneously to gather context:
 
 ```
-Agent(subagent_type="general-purpose", model="[models.nightcrawler || default_model]", prompt="[nightcrawler.md content]\n\n---\n\nExplore the codebase. Find patterns, conventions, and files relevant to: [task]. Return file structure, naming conventions, relevant code snippets.")
+Agent(subagent_type="general-purpose", model="[models.nightcrawler || default_model]", reasoning_effort="[efforts.nightcrawler || default_effort]", prompt="[nightcrawler.md content]\n\n---\n\nExplore the codebase. Find patterns, conventions, and files relevant to: [task]. Return file structure, naming conventions, relevant code snippets.")
 
-Agent(subagent_type="general-purpose", model="[models.sage || default_model]", prompt="[sage.md content]\n\n---\n\nResearch documentation and best practices for: [task]. Return key APIs, current best practices, gotchas, version-specific behavior.")
+Agent(subagent_type="general-purpose", model="[models.sage || default_model]", reasoning_effort="[efforts.sage || default_effort]", prompt="[sage.md content]\n\n---\n\nResearch documentation and best practices for: [task]. Return key APIs, current best practices, gotchas, version-specific behavior.")
 ```
 
 ### Step 3: Beast Consultation (Mandatory)
@@ -45,7 +46,7 @@ Agent(subagent_type="general-purpose", model="[models.sage || default_model]", p
 Before saving the plan, always consult Beast on the draft approach:
 
 ```
-Agent(subagent_type="general-purpose", model="[models.beast || default_model]", prompt="[beast.md content]\n\n---\n\nReview my planned approach for: [task]. Approach: [your plan]. Find gaps, ambiguities, AI-slop patterns, missing acceptance criteria, edge cases.")
+Agent(subagent_type="general-purpose", model="[models.beast || default_model]", reasoning_effort="[efforts.beast || default_effort]", prompt="[beast.md content]\n\n---\n\nReview my planned approach for: [task]. Approach: [your plan]. Find gaps, ambiguities, AI-slop patterns, missing acceptance criteria, edge cases.")
 ```
 
 Incorporate Beast's findings before writing the plan.
@@ -66,7 +67,7 @@ Plan requirements:
 If the user requests high accuracy, the plan is complex, or `Risk Level` is `HIGH`, run Emma Frost:
 
 ```
-Agent(subagent_type="general-purpose", model="[models.emma-frost || default_model]", prompt="[emma-frost.md content]\n\n---\n\nValidate this plan:\n\n[full plan content]")
+Agent(subagent_type="general-purpose", model="[models.emma-frost || default_model]", reasoning_effort="[efforts.emma-frost || default_effort]", prompt="[emma-frost.md content]\n\n---\n\nValidate this plan:\n\n[full plan content]")
 ```
 
 If REJECTED, fix every issue and resubmit. No retry limit.

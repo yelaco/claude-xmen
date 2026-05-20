@@ -4,13 +4,13 @@ Activate Cyclops to execute the latest plan.
 
 ## Instructions for Cerebro
 
-Read `.cerebro/agent-models.json`, then read Cyclops persona and activate for plan execution. Resolve `model = models["cyclops"] || default_model`.
+Read `.cerebro/agent-models.json`, then read Cyclops persona and activate for plan execution. Resolve `model = models["cyclops"] || default_model` and `reasoning_effort = efforts["cyclops"] || default_effort`.
 
 ```
 [Read .cerebro/agent-models.json]
 [Read .claude/agents/cyclops.md]
 
-Agent(subagent_type="general-purpose", model="[models.cyclops || default_model]", prompt="""
+Agent(subagent_type="general-purpose", model="[models.cyclops || default_model]", reasoning_effort="[efforts.cyclops || default_effort]", prompt="""
 [cyclops.md content]
 
 ---

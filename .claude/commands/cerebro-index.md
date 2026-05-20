@@ -6,7 +6,7 @@ Create or refresh `.cerebro/project-context.md` for this repository.
 
 This command is an onboarding/indexing workflow. It may write only `.cerebro/project-context.md`.
 
-Read `.cerebro/agent-models.json`, `.cerebro/templates/project-context.md`, Nightcrawler, and Sage. Resolve models from the map.
+Read `.cerebro/agent-models.json`, `.cerebro/templates/project-context.md`, Nightcrawler, and Sage. Resolve models and reasoning efforts from the map.
 
 Skills are optional. If repository, documentation, language, or framework skills are available, use them only to improve indexing precision. If unavailable, continue with Nightcrawler, Sage, and local repo inspection.
 
@@ -18,7 +18,7 @@ Run Nightcrawler and Sage in parallel:
 [Read .claude/agents/nightcrawler.md]
 [Read .claude/agents/sage.md]
 
-Agent(subagent_type="general-purpose", model="[models.nightcrawler || default_model]", prompt="""
+Agent(subagent_type="general-purpose", model="[models.nightcrawler || default_model]", reasoning_effort="[efforts.nightcrawler || default_effort]", prompt="""
 [nightcrawler.md content]
 
 ---
@@ -32,7 +32,7 @@ Index this repository for future Cerebro work. Return:
 - files that future agents should read first
 """)
 
-Agent(subagent_type="general-purpose", model="[models.sage || default_model]", prompt="""
+Agent(subagent_type="general-purpose", model="[models.sage || default_model]", reasoning_effort="[efforts.sage || default_effort]", prompt="""
 [sage.md content]
 
 ---

@@ -39,7 +39,7 @@ rg -n "($legacy_plan)([[:space:]]|\\x60|$)|($legacy_start)([[:space:]]|\\x60|$)|
 
 Expected: no matches, except archival docs only if intentionally retained and clearly marked historical.
 
-### 3. Model Map
+### 3. Model and Effort Map
 
 ```bash
 python3 -m json.tool .cerebro/agent-models.json > /dev/null
@@ -47,7 +47,7 @@ python3 -m json.tool .cerebro/agent-models.json > /dev/null
 
 Expected: valid JSON.
 
-Confirm `.cerebro/agent-models.json` contains all agents:
+Confirm `.cerebro/agent-models.json` contains model and effort entries for all agents:
 
 ```bash
 python3 - <<'PY'
@@ -59,12 +59,30 @@ required = {
 }
 data = json.loads(Path(".cerebro/agent-models.json").read_text())
 models = set(data.get("models", {}))
-missing = sorted(required - models)
-extra = sorted(models - required)
-if missing or extra:
-    print({"missing": missing, "extra": extra})
+efforts = set(data.get("efforts", {}))
+missing_models = sorted(required - models)
+extra_models = sorted(models - required)
+missing_efforts = sorted(required - efforts)
+extra_efforts = sorted(efforts - required)
+valid_efforts = {"low", "medium", "high"}
+invalid_efforts = sorted(
+    (agent, effort)
+    for agent, effort in data.get("efforts", {}).items()
+    if effort not in valid_efforts
+)
+if missing_models or extra_models or missing_efforts or extra_efforts or invalid_efforts:
+    print({
+        "missing_models": missing_models,
+        "extra_models": extra_models,
+        "missing_efforts": missing_efforts,
+        "extra_efforts": extra_efforts,
+        "invalid_efforts": invalid_efforts,
+    })
     raise SystemExit(1)
-print("model coverage ok")
+if data.get("default_effort") not in valid_efforts:
+    print({"invalid_default_effort": data.get("default_effort")})
+    raise SystemExit(1)
+print("model and effort coverage ok")
 PY
 ```
 
@@ -74,8 +92,10 @@ PY
 python3 - <<'PY'
 import json
 from pathlib import Path
-required = {"name", "description", "model"}
-model_map = json.loads(Path(".cerebro/agent-models.json").read_text())["models"]
+required = {"name", "description", "model", "effort"}
+data = json.loads(Path(".cerebro/agent-models.json").read_text())
+model_map = data["models"]
+effort_map = data["efforts"]
 failed = []
 for path in sorted(Path(".claude/agents").glob("*.md")):
     text = path.read_text()
@@ -100,6 +120,9 @@ for path in sorted(Path(".claude/agents").glob("*.md")):
     expected_model = model_map.get(agent)
     if expected_model != frontmatter["model"]:
         failed.append((str(path), f"model {frontmatter['model']} != {expected_model}"))
+    expected_effort = effort_map.get(agent)
+    if expected_effort != frontmatter["effort"]:
+        failed.append((str(path), f"effort {frontmatter['effort']} != {expected_effort}"))
 if failed:
     for item in failed:
         print(item)

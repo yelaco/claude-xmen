@@ -34,7 +34,7 @@ Cerebro will assemble the team, research your codebase, and execute — no furth
 | `/to-me-my-x-men [task]` | Full autonomous mode. Nightcrawler and Sage recon in parallel, then Cyclops drives execution to completion. |
 | `/cerebro-plan [task]` | Interview-based planning. Professor X asks clarifying questions, Beast checks for gaps, Emma Frost validates. Ends with a written plan in `.cerebro/plans/`. |
 | `/cerebro-start-work` | Execute the latest plan. Cyclops picks up from the last checkpoint if a session was interrupted. |
-| `/cerebro-doctor` | Validate command names, model routing, agent frontmatter, plan/state schemas, task result envelopes, and stop hook health. |
+| `/cerebro-doctor` | Validate command names, model/effort routing, agent frontmatter, plan/state schemas, task result envelopes, and stop hook health. |
 | `/cerebro-index` | Build `.cerebro/project-context.md` with stack, commands, conventions, entrypoints, and risky areas. |
 
 ---
@@ -129,7 +129,7 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
 │   └── hooks/
 │       └── check-pending-todos.sh     # Stop hook — enforces todo completion
 └── .cerebro/
-    ├── agent-models.json              # Per-agent model routing
+    ├── agent-models.json              # Per-agent model and effort routing
     ├── schemas/
     │   └── boulder.schema.json        # Execution state schema
     ├── templates/
@@ -211,13 +211,13 @@ The stop hook is registered in `.claude/settings.json`:
 
 All tools are permitted by default (`Bash(*)`, `Read(*)`, `Write(*)`, `Edit(*)`). Restrict as needed for your environment.
 
-### Agent Model Routing
+### Agent Model and Effort Routing
 
-Agent model defaults live in `.cerebro/agent-models.json`. Cerebro reads this map before spawning agents and passes the resolved model as the Agent invocation `model` parameter. See [docs/guide/model-routing.md](docs/guide/model-routing.md).
+Agent model and effort defaults live in `.cerebro/agent-models.json`. Cerebro reads this map before spawning agents, passes the resolved model as the Agent invocation `model` parameter, and passes the resolved effort as `reasoning_effort` when supported by the current agent runtime. See [docs/guide/model-routing.md](docs/guide/model-routing.md).
 
 ### Skills
 
-Skills are optional overlays. The template ships without required skills; users can add skills later without changing the base workflow. Project-local `.cerebro` contracts, approval gates, todo discipline, model routing, and result envelopes remain authoritative.
+Skills are optional overlays. The template ships without required skills; users can add skills later without changing the base workflow. Project-local `.cerebro` contracts, approval gates, todo discipline, model/effort routing, and result envelopes remain authoritative.
 
 ---
 

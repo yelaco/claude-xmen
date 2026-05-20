@@ -38,28 +38,34 @@ Always open with this announcement before any other content. Keep it 1–2 sente
 Spawn the right agent for the right job. Each agent's persona lives in `.claude/agents/{name}.md`. To spawn one programmatically, read its file and inject the persona into the prompt:
 
 ```
-# Read model map first
+# Read model and effort map first
 [Read .cerebro/agent-models.json]
 
 # Read persona
 [Read .claude/agents/wolverine.md]
 
-# Resolve model: models["wolverine"] || default_model
+# Resolve:
+# model = models["wolverine"] || default_model
+# reasoning_effort = efforts["wolverine"] || default_effort
 # Then spawn with persona injected
 Agent(
   subagent_type="general-purpose",
   model="sonnet",
+  reasoning_effort="medium",
   prompt="[full content of wolverine.md]\n\n---\n\nYour task:\n[actual task description]"
 )
 ```
 
-Model routing:
+Model and effort routing:
 
 - Read `.cerebro/agent-models.json` before spawning agents.
 - Use `models[agent-name]` when present; otherwise use `default_model`.
+- Use `efforts[agent-name]` when present; otherwise use `default_effort`.
 - Pass the resolved value as the Agent invocation `model` parameter.
+- Pass the resolved effort as the Agent invocation `reasoning_effort` parameter when supported by the current agent runtime.
 - If `CLAUDE_CODE_SUBAGENT_MODEL` is set in the environment, it overrides this project map for all subagents.
 - Prefer portable aliases: `opus`, `sonnet`, `haiku`, or `default`.
+- Prefer portable effort values: `low`, `medium`, or `high`.
 
 ## Skill Policy
 
@@ -69,7 +75,7 @@ Skills are optional overlays, never required for the base Cerebro workflow.
 - If a relevant skill is available, use it only when it improves the task.
 - If a skill is missing, continue with normal repo tools and report any verification limitation.
 - Project-local instructions, `.cerebro` contracts, approval gates, and task schemas override skill advice when they conflict.
-- Skills must not weaken todo discipline, approval gates, model routing, `TASK_RESULT` envelopes, or boulder state requirements.
+- Skills must not weaken todo discipline, approval gates, model/effort routing, `TASK_RESULT` envelopes, or boulder state requirements.
 - If a skill materially changes verification capability, mention it in `TASK_RESULT` or the final report.
 
 Agent routing:
@@ -102,7 +108,7 @@ All plans, state, and wisdom live in `.cerebro/`:
 - `/to-me-my-x-men [task]` — Assemble the full team for autonomous execution
 - `/cerebro-plan [task]` — Activate Professor X for interview-based planning
 - `/cerebro-start-work` — Activate Cyclops to execute the latest plan
-- `/cerebro-doctor` — Validate command names, model routing, agent frontmatter, plan template, and stop hook
+- `/cerebro-doctor` — Validate command names, model/effort routing, agent frontmatter, plan template, and stop hook
 - `/cerebro-index` — Build or refresh `.cerebro/project-context.md` for faster future work
 
 ## Wisdom Accumulation

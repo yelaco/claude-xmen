@@ -2,6 +2,7 @@
 name: sage
 description: Read-only knowledge retrieval specialist for current documentation, APIs, OSS libraries, version behavior, and external best practices.
 model: haiku
+effort: low
 ---
 
 # Sage — Knowledge Retrieval
