@@ -1,69 +1,99 @@
-# To Me, My X-Men — Autonomous Execution Mode
+# To Me, My X-Men - Agent Team Mode
 
 Assemble the full team for autonomous execution of: $ARGUMENTS
 
 ## Instructions for Cerebro
 
-You are Cerebro. The user has called the full team. Execute autonomously from start to finish.
+You are Cerebro, the agent team lead. Use the native Claude Code agent team tools for this command: `TeamCreate`, `TaskCreate`, `TaskUpdate`, `Agent` (with `team_name` + `name`), `SendMessage`, and `TeamDelete`.
 
-Before spawning agents, read `.cerebro/agent-models.json`. For every Agent call below, resolve `model = models[agent-name] || default_model` and `reasoning_effort = efforts[agent-name] || default_effort`, then pass them as per-invocation parameters.
+Do not implement the task alone if it can be partitioned. Create a real agent team, populate the shared task list, spawn teammates with `team_name` and `name` set, let Cyclops coordinate assignments, and wait for Cyclops to report back before synthesizing the final result.
+
+### 1. Risk Gate
 
 Classify risk before execution:
 - `LOW`: proceed.
-- `MEDIUM`: proceed, but state assumptions in the final report.
-- `HIGH`: ask the user to explicitly confirm the high-risk action before continuing. Do not reroute automatically to `/cerebro-plan`.
-- High-risk examples: destructive file operations, migrations, production config, credentials, auth policy, billing/payment behavior, dependency upgrades with broad blast radius, external mutating API calls, or git history rewrites.
+- `MEDIUM`: proceed, but record assumptions in the final report.
+- `HIGH`: ask the user to explicitly confirm the high-risk action before continuing.
 
-### Phase 1: Reconnaissance — run BOTH in a single response (parallel)
+High-risk examples: destructive file operations, migrations, production config, credentials, auth policy, billing/payment behavior, dependency upgrades with broad blast radius, external mutating API calls, or git history rewrites.
 
-Read both persona files, then spawn in parallel:
+### 2. Create The Team
 
-```
-[Read .claude/agents/nightcrawler.md]
-[Read .claude/agents/sage.md]
+Call `TeamCreate` with a kebab-case team name derived from the task (e.g., `catnip-review`, `auth-refactor`).
 
-Agent(subagent_type="general-purpose", model="[models.nightcrawler || default_model]", reasoning_effort="[efforts.nightcrawler || default_effort]", prompt="[nightcrawler.md content]\n\n---\n\nExplore the codebase. Understand the current structure, patterns, and conventions relevant to: $ARGUMENTS. Return: directory structure, relevant files with descriptions, coding conventions, test setup, useful snippets.")
+### 3. Create The Shared Task List
 
-Agent(subagent_type="general-purpose", model="[models.sage || default_model]", reasoning_effort="[efforts.sage || default_effort]", prompt="[sage.md content]\n\n---\n\nResearch documentation and best practices relevant to: $ARGUMENTS. Return: key APIs with working examples, current best practices, version gotchas, known issues.")
-```
+After `TeamCreate`, call `TaskCreate` for every task needed to complete the objective. Required fields: `subject` (short, imperative — "Implement auth middleware") and `description` (all context the teammate needs to act without asking). Optional: `activeForm` (present-continuous spinner label — "Implementing auth middleware…").
 
-Wait for both to complete before Phase 2.
+After all tasks are created, wire dependencies with `TaskUpdate addBlockedBy`:
 
-### Phase 2: Execute
+- Research tasks (recon, research, architecture): no dependencies — run first
+- Implementation tasks: `addBlockedBy` the research task IDs they depend on
+- Review / gap analysis: `addBlockedBy` the implementation task IDs they cover
+- Emma Frost validation: `addBlockedBy` the review task ID — only when risk is HIGH
 
-Read Cyclops persona, then activate with full reconnaissance context:
+### 4. Spawn The Team
 
-```
-[Read .claude/agents/cyclops.md]
+Spawn all teammates via the `Agent` tool with **both** `team_name` and `name` set. Spawn the first wave in a single message so they run in parallel:
 
-Agent(subagent_type="general-purpose", model="[models.cyclops || default_model]", reasoning_effort="[efforts.cyclops || default_effort]", prompt="""
-[cyclops.md content]
+- `cyclops-field` using the **cyclops** agent type — coordinates the shared task list from day one; include in the prompt: team name, objective, risk level, and the names of all active teammates (e.g., `wolverine-implementation`, `storm-ui`, `nightcrawler-recon`, etc.)
+- `nightcrawler-recon` using the **nightcrawler** agent type
+- `sage-research` using the **sage** agent type
+- `forge-architecture` using the **forge** agent type
+- `wolverine-implementation` using the **wolverine** agent type — idles until Cyclops assigns work
+- `storm-ui` using the **storm** agent type — only include when the task touches UI
+- `beast-review` using the **beast** agent type
+- `emma-validation` using the **emma-frost** agent type — only include when risk is HIGH
 
----
+Cyclops will call `TaskList`, assign unblocked tasks to teammates via `TaskUpdate`, and message them via `SendMessage`. Teammates complete their work, call `TaskUpdate` to mark tasks done, and `SendMessage` their results to Cyclops. Cyclops verifies results and `SendMessage`s a `CYCLOPS_REPORT` to Cerebro when all tasks are complete.
 
-Execute this task end-to-end: $ARGUMENTS
+Cerebro does not relay messages between teammates. Teammates communicate directly through `SendMessage` and the shared task list.
 
-CODEBASE CONTEXT (from Nightcrawler):
-[paste Nightcrawler's full findings]
+### 5. Team Run Manifest
 
-RESEARCH CONTEXT (from Sage):
-[paste Sage's full findings]
+Create `.cerebro/team-runs/{run-id}.json` from `.cerebro/templates/team-run.json`, where `{run-id}` is `YYYYMMDD-HHMMSS-{slug}`.
 
-Instructions:
-- Delegate all code writing to Wolverine (read .claude/agents/wolverine.md, spawn as general-purpose)
-- Delegate all UI/frontend work to Storm (read .claude/agents/storm.md, spawn as general-purpose)
-- Consult Forge for any architecture decisions (read .claude/agents/forge.md, spawn as general-purpose)
-- Enforce explicit confirmation before high-risk actions
-- Accumulate wisdom after each sub-task
-- Verify all results before marking complete
-- Require `TASK_RESULT` envelopes from Wolverine and Storm
-- Report when fully done with verification evidence
-""")
-```
+Keep the manifest current as the coordination audit log:
+- Record the command, objective, risk level, team name, teammates, and responsibilities.
+- Record file ownership before Wolverine or Storm writes.
+- Record task states, dependencies, verification commands, and teammate status.
+- Record mailbox decisions that resolve cross-agent assumptions, shared files, or blockers.
+- Record approvals and cleanup status.
 
-### Phase 3: Report
+Validate the shape against `.cerebro/schemas/team-run.schema.json` when practical.
 
-When Cyclops returns, summarize for the user:
-- What was built
-- What files changed
-- How to verify it works
+### 6. Lead Responsibilities While Team Is Running
+
+As lead, Cerebro must:
+- Monitor for Cyclops' `CYCLOPS_REPORT` message — that is the signal all tasks are done.
+- Answer any approval gate questions Cyclops sends via `SendMessage`.
+- Nudge stuck teammates with a `SendMessage` if a task has been idle too long.
+- Apply Cyclops' `STATE_PATCH` to `.cerebro/boulder.json`.
+- Apply Cyclops' `NOTEPAD_UPDATES` to `.cerebro/notepads/{plan-name}/`.
+- Run final verification commands in the lead session before marking the run complete.
+
+### 7. Quality Gates
+
+Before final completion:
+- Cyclops must report `STATUS: COMPLETE` or `STATUS: BLOCKED`.
+- Verification commands must pass (or failures are explicitly reported).
+- `.cerebro/boulder.json` and relevant notepads must be updated.
+- The team run manifest must record final verification and cleanup status.
+
+### 8. Cleanup
+
+When the team is done:
+1. Call `SendMessage` with `{type: "shutdown_request"}` to every active teammate by name
+2. Wait for their `{type: "shutdown_response"}` acknowledgements
+3. Call `TeamDelete` to clean up team files
+4. Update `.cerebro/team-runs/{run-id}.json` cleanup status to `cleaned_up`
+
+### 9. Final Report
+
+Summarize:
+- Teammates spawned and what each owned.
+- Team run manifest path.
+- What changed.
+- Verification run.
+- Assumptions, risks, and blockers.
+- Whether the team was cleaned up.

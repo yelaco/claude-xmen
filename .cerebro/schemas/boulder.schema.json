@@ -1,6 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Cerebro Boulder Execution State",
+  "description": "Business-level execution checkpoint. Task progress lives in the native TaskList — do not duplicate it here.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -9,18 +10,17 @@
     "plan_name",
     "status",
     "risk_level",
+    "team_name",
     "started_at",
     "updated_at",
-    "completed_tasks",
-    "remaining_tasks",
     "approval_gates",
     "verification_history",
-    "current_task"
+    "decisions"
   ],
   "properties": {
     "version": {
       "type": "integer",
-      "const": 1
+      "const": 2
     },
     "active_plan": {
       "type": "string",
@@ -38,6 +38,10 @@
       "type": "string",
       "enum": ["LOW", "MEDIUM", "HIGH"]
     },
+    "team_name": {
+      "type": "string",
+      "description": "Active team name — use with TaskList to get live task state"
+    },
     "started_at": {
       "type": "string",
       "minLength": 1
@@ -45,18 +49,6 @@
     "updated_at": {
       "type": "string",
       "minLength": 1
-    },
-    "completed_tasks": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/task_ref"
-      }
-    },
-    "remaining_tasks": {
-      "type": "array",
-      "items": {
-        "$ref": "#/$defs/task_ref"
-      }
     },
     "approval_gates": {
       "type": "array",
@@ -70,45 +62,15 @@
         "$ref": "#/$defs/verification_entry"
       }
     },
-    "current_task": {
-      "anyOf": [
-        {
-          "$ref": "#/$defs/task_ref"
-        },
-        {
-          "type": "null"
-        }
-      ]
+    "decisions": {
+      "type": "array",
+      "description": "Architectural and approval decisions made during execution",
+      "items": {
+        "$ref": "#/$defs/decision"
+      }
     }
   },
   "$defs": {
-    "task_ref": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": ["id", "name", "owner", "risk", "approval_gate"],
-      "properties": {
-        "id": {
-          "type": "string",
-          "minLength": 1
-        },
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "owner": {
-          "type": "string",
-          "enum": ["Wolverine", "Storm", "Cyclops", "Forge consultation"]
-        },
-        "risk": {
-          "type": "string",
-          "enum": ["LOW", "MEDIUM", "HIGH"]
-        },
-        "approval_gate": {
-          "type": "string",
-          "minLength": 1
-        }
-      }
-    },
     "approval_gate": {
       "type": "object",
       "additionalProperties": false,
@@ -136,12 +98,8 @@
     "verification_entry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["task_id", "command", "result", "verified_at", "notes"],
+      "required": ["command", "result", "verified_at", "notes"],
       "properties": {
-        "task_id": {
-          "type": "string",
-          "minLength": 1
-        },
         "command": {
           "type": "string",
           "minLength": 1
@@ -155,6 +113,28 @@
           "minLength": 1
         },
         "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["at", "topic", "decision", "rationale"],
+      "properties": {
+        "at": {
+          "type": "string",
+          "minLength": 1
+        },
+        "topic": {
+          "type": "string",
+          "minLength": 1
+        },
+        "decision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rationale": {
           "type": "string"
         }
       }

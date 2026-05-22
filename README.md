@@ -31,11 +31,11 @@ Cerebro will assemble the team, research your codebase, and execute — no furth
 
 | Command | What it does |
 |---|---|
-| `/to-me-my-x-men [task]` | Full autonomous mode. Nightcrawler and Sage recon in parallel, then Cyclops drives execution to completion. |
-| `/cerebro-plan [task]` | Interview-based planning. Professor X asks clarifying questions, Beast checks for gaps, Emma Frost validates. Ends with a written plan in `.cerebro/plans/`. |
-| `/cerebro-start-work` | Execute the latest plan. Cyclops picks up from the last checkpoint if a session was interrupted. |
-| `/cerebro-doctor` | Validate command names, model/effort routing, agent frontmatter, plan/state schemas, task result envelopes, and stop hook health. |
-| `/cerebro-index` | Build `.cerebro/project-context.md` with stack, commands, conventions, entrypoints, and risky areas. |
+| `/to-me-my-x-men [task]` | Full autonomous mode. Cerebro creates an agent team, assigns teammates, lets them coordinate, then verifies and synthesizes the result. |
+| `/cerebro-plan [task]` | Interview-based planning. Cerebro creates a planning team so Professor X, Nightcrawler, Sage, Forge, Beast, and Emma Frost can coordinate. |
+| `/cerebro-start-work` | Execute the latest plan. Cerebro creates an execution team coordinated by Cyclops. |
+| `/cerebro-doctor` | Validate command names, native agent configuration, plan/state schemas, task result hooks, and stop hook health. |
+| `/cerebro-index` | Build `.cerebro/project-context.md` with an indexing team. |
 
 ---
 
@@ -43,17 +43,17 @@ Cerebro will assemble the team, research your codebase, and execute — no furth
 
 | Agent | Role | Triggers when |
 |---|---|---|
-| **Professor X** | Strategic planner | `/cerebro-plan` is called; needs to interview the user |
+| **Professor X** | Strategic planner | Cerebro needs a canonical plan draft |
 | **Beast** | Gap analyst | A plan is drafted; checks for missing cases |
 | **Emma Frost** | Plan reviewer | High-stakes work; validates OKAY or REJECT |
-| **Cyclops** | Execution orchestrator | `/cerebro-start-work` runs; never writes code directly |
+| **Cyclops** | Execution sequencer | Cerebro needs task order, gate checks, state patches, or verification decisions |
 | **Wolverine** | Code writer | Any code, tests, or bug fixes are needed |
 | **Storm** | Frontend engineer | UI, components, visual engineering |
 | **Forge** | Architecture consultant | Design decisions, system structure |
 | **Nightcrawler** | Codebase searcher | Recon before execution; grep, pattern discovery |
 | **Sage** | Docs & knowledge | Library research, API lookup, best practices |
 
-Agents that are independent of each other run in parallel. Cerebro spawns them in a single response.
+Every non-trivial workflow uses an agent team so teammates can share a task list and talk to each other. Cerebro also writes a team run manifest so ownership, mailbox decisions, verification, and cleanup are auditable. Trivial questions are answered directly.
 
 ---
 
@@ -63,26 +63,24 @@ Agents that are independent of each other run in parallel. Cerebro spawns them i
 User
  │
  ▼
-Cerebro (CLAUDE.md)
+Cerebro (CLAUDE.md, team lead)
  │
- ├── /to-me-my-x-men ──► Nightcrawler + Sage (parallel recon)
- │                              │
- │                              ▼
- │                         Cyclops (orchestrator)
- │                              │
- │                   ┌──────────┴──────────┐
- │                   ▼                     ▼
- │              Wolverine               Storm
- │             (code/tests)          (UI/frontend)
- │                   │
- │              Forge / Sage (consulted on demand)
+ ├── /to-me-my-x-men ──► Agent Team
+ │                         ├── cyclops-field (task list / gates)
+ │                         ├── nightcrawler-recon (codebase)
+ │                         ├── sage-research (docs)
+ │                         ├── forge-architecture (design)
+ │                         ├── wolverine-implementation (code/tests)
+ │                         ├── storm-ui (frontend)
+ │                         ├── beast-review (gaps)
+ │                         └── emma-validation (high-risk)
  │
- ├── /cerebro-plan ──► Professor X → Beast → Emma Frost
+ ├── /cerebro-plan ──► Planning Agent Team
  │                              │
  │                              ▼
  │                    .cerebro/plans/{name}.md
  │
- └── /cerebro-start-work ────► Cyclops (reads boulder.json, resumes or inits)
+ └── /cerebro-start-work ────► Execution Agent Team
 ```
 
 ### Session Continuity
@@ -93,9 +91,11 @@ Every plan execution is tracked in `.cerebro/boulder.json`. If Claude Code stops
 "Resuming auth-api-plan — 3 of 7 tasks complete"
 ```
 
+Every team workflow also writes `.cerebro/team-runs/{run-id}.json`. The run manifest records teammates, file ownership, task state, mailbox decisions, approvals, verification, and cleanup status. Native team lifecycle hooks append task and idle events to `.cerebro/team-runs/events.jsonl`.
+
 ### Wisdom Accumulation
 
-After each delegated task, learnings are written to `.cerebro/notepads/{plan-name}/learnings.md` — conventions found, approaches that worked, gotchas hit. Every subsequent agent call receives the full accumulated context.
+After each delegated task, learnings are written to focused files under `.cerebro/notepads/{plan-name}/` — conventions found, approaches that worked, gotchas hit, and verification outcomes. Subsequent team assignments receive only the relevant accumulated context.
 
 ### Todo Enforcement
 
@@ -109,8 +109,8 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
 .
 ├── CLAUDE.md                          # Cerebro — main agent identity
 ├── .claude/
-│   ├── settings.json                  # Wires the stop hook
-│   ├── agents/                        # 9 sub-agent definitions
+│   ├── settings.json                  # Wires hooks, permissions, and team env
+│   ├── agents/                        # 9 native teammate definitions
 │   │   ├── professor-x.md
 │   │   ├── beast.md
 │   │   ├── emma-frost.md
@@ -127,17 +127,21 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
 │   │   ├── cerebro-plan.md
 │   │   └── cerebro-start-work.md
 │   └── hooks/
-│       └── check-pending-todos.sh     # Stop hook — enforces todo completion
+│       ├── check-pending-todos.sh        # Stop hook — enforces todo completion
+│       ├── check-task-result-envelope.sh # SubagentStop hook — enforces TASK_RESULT
+│       └── log-team-event.sh             # Team hooks — logs task/idle events
 └── .cerebro/
-    ├── agent-models.json              # Per-agent model and effort routing
     ├── schemas/
-    │   └── boulder.schema.json        # Execution state schema
+    │   ├── boulder.schema.json        # Execution state schema
+    │   └── team-run.schema.json       # Agent team run manifest schema
     ├── templates/
     │   ├── plan.md                    # Canonical Professor X plan schema
-    │   └── project-context.md         # Canonical repository index schema
+    │   ├── project-context.md         # Canonical repository index schema
+    │   └── team-run.json              # Agent team run manifest template
     ├── project-context.md             # Repository index created by /cerebro-index
-    ├── plans/                         # Plans written by Professor X
+    ├── plans/                         # Plans written by Cerebro from Professor X drafts
     ├── notepads/                      # Per-plan wisdom (learnings, decisions)
+    ├── team-runs/                     # Per-team coordination audit logs
     └── boulder.json                   # Execution state (created at /cerebro-start-work)
 ```
 
@@ -163,7 +167,7 @@ Best for clear tasks where you trust the team to figure out the details.
 /to-me-my-x-men migrate the database layer from raw SQL to Prisma
 ```
 
-Nightcrawler maps the codebase. Sage researches Prisma. Cyclops drives execution. You get a completion report.
+Cerebro creates an agent team and team run manifest. Nightcrawler maps the codebase, Sage researches Prisma, Cyclops maintains the shared task list, Wolverine and Storm implement partitioned work, and reviewers challenge the result. You get a completion report.
 
 **2. Interview-first (high confidence)**
 
@@ -173,27 +177,38 @@ Best for complex features where requirements need to be locked down before a lin
 /cerebro-plan redesign the notification system to support real-time push
 ```
 
-Professor X interviews you, Beast finds the gaps, Emma Frost validates. Then:
+Cerebro interviews you, Professor X drafts the plan, Beast finds the gaps, and Emma Frost validates high-risk plans. Then:
 
 ```
 /cerebro-start-work
 ```
 
-Cyclops executes the written plan with full checkpoint tracking.
+Cerebro executes the written plan with Cyclops sequencing and full checkpoint tracking.
 
-**3. Direct agent selection**
+**3. Direct role selection**
 
-Tab-complete to any agent in Claude Code for targeted use.
+Tab-complete to any role in Claude Code for targeted use, but Cerebro workflows use teams by default.
 
 ---
 
 ## Configuration
 
-The stop hook is registered in `.claude/settings.json`:
+Hooks are registered in `.claude/settings.json`:
 
 ```json
 {
   "hooks": {
+    "SubagentStop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/check-task-result-envelope.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
@@ -204,25 +219,70 @@ The stop hook is registered in `.claude/settings.json`:
           }
         ]
       }
+    ],
+    "TaskCreated": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log-team-event.sh"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log-team-event.sh"
+          }
+        ]
+      }
+    ],
+    "TeammateIdle": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash .claude/hooks/log-team-event.sh"
+          }
+        ]
+      }
     ]
   }
 }
 ```
 
-All tools are permitted by default (`Bash(*)`, `Read(*)`, `Write(*)`, `Edit(*)`). Restrict as needed for your environment.
+Project settings allow common tools and deny sensitive reads such as `.env*` plus generated build output writes. Individual teammate role tool boundaries live in `.claude/agents/*.md`.
 
-### Agent Model and Effort Routing
+Agent teams are enabled for this template:
 
-Agent model and effort defaults live in `.cerebro/agent-models.json`. Cerebro reads this map before spawning agents, passes the resolved model as the Agent invocation `model` parameter, and passes the resolved effort as `reasoning_effort` when supported by the current agent runtime. See [docs/guide/model-routing.md](docs/guide/model-routing.md).
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+Agent teams require Claude Code v2.1.32 or later and are experimental. Cerebro uses them for every non-trivial workflow so teammates can coordinate through a shared task list and mailbox.
+
+### Native Agent Configuration
+
+Agent model, effort, and tool boundaries live in each native role frontmatter. Agent teams reuse those role definitions for teammates. See [docs/guide/model-routing.md](docs/guide/model-routing.md).
 
 ### Skills
 
-Skills are optional overlays. The template ships without required skills; users can add skills later without changing the base workflow. Project-local `.cerebro` contracts, approval gates, todo discipline, model/effort routing, and result envelopes remain authoritative.
+Skills are optional overlays. The template ships without required skills; users can add skills later without changing the base workflow. Project-local `.cerebro` contracts, approval gates, todo discipline, native agent boundaries, and result envelopes remain authoritative.
 
 ---
 
 ## Requirements
 
-- Claude Code (claude.ai/code)
+- Claude Code v2.1.32 or later for agent teams
 - A project with a git repo (recommended)
 - No additional dependencies — pure Claude Code primitives
