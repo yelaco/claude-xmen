@@ -37,7 +37,7 @@
       "notes": "Team run manifest template — always synced from upstream"
     },
     {
-      "path": "docs/guide/skill-policy.md",
+      "path": ".cerebro/docs/skill-policy.md",
       "ownership": "template",
       "notes": "Canonical skill policy doc — always synced from upstream"
     },
@@ -62,7 +62,7 @@
       "notes": "Hook wiring and permissions — project-specific additions may coexist with upstream changes"
     },
     {
-      "path": "docs/guide/*.md",
+      "path": ".cerebro/docs/*.md",
       "ownership": "merge",
       "notes": "Workflow guide docs (except skill-policy.md which is template-owned) — review upstream changes"
     },

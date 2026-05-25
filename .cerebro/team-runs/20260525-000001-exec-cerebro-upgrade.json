@@ -33,7 +33,7 @@
     { "path": ".cerebro/schemas/upgrade-state.schema.json", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 3" },
     { "path": ".claude/commands/cerebro-doctor.md", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 6" },
     { "path": "CLAUDE.md", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 7" },
-    { "path": "docs/guide/cerebro-workflow.md", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 7" },
+    { "path": ".cerebro/docs/cerebro-workflow.md", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 7" },
     { "path": "README.md", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 7" }
   ],
   "mailbox_decisions": [],
@@ -50,7 +50,7 @@
     { "command": "grep 'upgrade-cache' .gitignore", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 2" },
     { "command": "python3 -m json.tool .cerebro/schemas/upgrade-state.schema.json > /dev/null", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 3" },
     { "command": "rg -n 'cerebro-upgrade.md' .claude/commands/cerebro-doctor.md", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 6" },
-    { "command": "rg -n 'cerebro-upgrade' CLAUDE.md README.md docs/guide/", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 7" }
+    { "command": "rg -n 'cerebro-upgrade' CLAUDE.md README.md .cerebro/docs/", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 7" }
   ],
   "cleanup": {
     "team_stopped": true,

@@ -9,8 +9,8 @@
 - Fetch strategy uses **git** as the primary mechanism (`git clone --filter=blob:none --depth=1 --branch <ref>` into a tmp dir under `.cerebro/upgrade-cache/<ref>/`). `gh` and the raw GitHub API are NOT required and are not relied on. If `git` is unavailable, the command fails fast with a clear remediation message. This avoids API rate limits, auth requirements, and partial-file fetch fragility.
 - File ownership is declared in `.cerebro/upgrade-manifest.json` that ships with the template. Each entry has `path` (glob or exact), `ownership` (`template` | `user` | `merge`), and optional `notes`. The manifest is itself template-owned, but **the local copy's ownership overrides win** during upgrade — Cerebro reads the local manifest, not the upstream one, for ownership decisions on this run, then offers to update the manifest itself as a separately-gated step (Gate B).
 - Ownership defaults (initial manifest content):
-  - `template` (overwrite, no prompt): `.claude/agents/*.md`, `.claude/commands/cerebro-*.md`, `.claude/commands/to-me-my-x-men.md`, `.claude/hooks/*.sh`, `.cerebro/schemas/*.json`, `.cerebro/templates/*.md`, `.cerebro/templates/*.json`, `docs/guide/skill-policy.md`, the `cerebro-upgrade` command file itself.
-  - `merge` (unified diff shown, Gate A fires on conflict): `CLAUDE.md`, `README.md`, `.claude/settings.json`, `docs/guide/*.md` other than `skill-policy.md`.
+  - `template` (overwrite, no prompt): `.claude/agents/*.md`, `.claude/commands/cerebro-*.md`, `.claude/commands/to-me-my-x-men.md`, `.claude/hooks/*.sh`, `.cerebro/schemas/*.json`, `.cerebro/templates/*.md`, `.cerebro/templates/*.json`, `.cerebro/docs/skill-policy.md`, the `cerebro-upgrade` command file itself.
+  - `merge` (unified diff shown, Gate A fires on conflict): `CLAUDE.md`, `README.md`, `.claude/settings.json`, `.cerebro/docs/*.md` other than `skill-policy.md`.
   - `user` (never touched, never listed in change report): `.cerebro/plans/**`, `.cerebro/notepads/**`, `.cerebro/boulder.json`, `.cerebro/.pending-todos`, `.cerebro/team-runs/**`, `.cerebro/project-context.md`, and anything not listed in the manifest.
 - The `user_owned_patterns` in the manifest are the authoritative source at runtime. No hardcoded fallback list exists in the command file — if the manifest is absent the command aborts (first-run bootstrap must be run first).
 - Baseline tracking: after each successful upgrade, Cerebro writes `.cerebro/upgrade-state.json` with `applied_ref`, `applied_sha`, `applied_at`, and a SHA-256 hash map of every template-owned and merge-owned file at the moment of application. This baseline drives change detection on the next run.
@@ -140,10 +140,10 @@
 ### Task 7: Update `CLAUDE.md` and docs
 
 **Owner:** Wolverine
-**Files:** `CLAUDE.md` (modify Commands section), `docs/guide/cerebro-workflow.md` (modify or create upgrade section), `README.md` (modify command summary if it carries one)
-**What:** Add `/cerebro-upgrade <ref> [--dry-run] [--strict] [--only <glob>]` to the Commands list in `CLAUDE.md`. Add an "Upgrading from upstream" section to `docs/guide/cerebro-workflow.md` covering the flow, four gates, manifest/state files, and v1 known gaps (symlinks/mode bits, no auto-rollback). Update `README.md` if it carries a command summary table.
+**Files:** `CLAUDE.md` (modify Commands section), `.cerebro/docs/cerebro-workflow.md` (modify or create upgrade section), `README.md` (modify command summary if it carries one)
+**What:** Add `/cerebro-upgrade <ref> [--dry-run] [--strict] [--only <glob>]` to the Commands list in `CLAUDE.md`. Add an "Upgrading from upstream" section to `.cerebro/docs/cerebro-workflow.md` covering the flow, four gates, manifest/state files, and v1 known gaps (symlinks/mode bits, no auto-rollback). Update `README.md` if it carries a command summary table.
 **TDD:** Not applicable: docs-only.
-**Verify:** `rg -n 'cerebro-upgrade' CLAUDE.md README.md docs/guide/`
+**Verify:** `rg -n 'cerebro-upgrade' CLAUDE.md README.md .cerebro/docs/`
 **Risk:** LOW
 **Approval Gate:** None
 

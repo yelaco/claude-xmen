@@ -150,8 +150,8 @@ Expected: all required sections and task fields are present.
 ### 6. Skill Policy
 
 ```bash
-test -f docs/guide/skill-policy.md
-rg -n "Skill Policy|Skills are optional" CLAUDE.md .claude/agents/wolverine.md .claude/agents/storm.md .claude/agents/sage.md docs/guide/skill-policy.md
+test -f .cerebro/docs/skill-policy.md
+rg -n "Skill Policy|Skills are optional" CLAUDE.md .claude/agents/wolverine.md .claude/agents/storm.md .claude/agents/sage.md .cerebro/docs/skill-policy.md
 ```
 
 Expected: core policy exists and key skill-using agents mention that skills are optional.
