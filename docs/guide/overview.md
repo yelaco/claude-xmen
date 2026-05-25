@@ -6,7 +6,6 @@ Cerebro is a Claude Code agentic workflow template. It gives one project a repea
 - `.claude/agents/*.md` for specialist personas
 - `.claude/commands/*.md` for slash command workflows
 - `.claude/hooks/check-pending-todos.sh` for stop-hook enforcement
-- `.cerebro/agent-models.json` for per-agent model and effort routing
 - `.cerebro/` for plans, execution state, and accumulated learnings
 
 Skills are optional overlays. The base workflow does not require any skill to be installed.
@@ -36,6 +35,5 @@ Skills are optional overlays. The base workflow does not require any skill to be
 
 - [Cerebro Workflow](./cerebro-workflow.md)
 - [Orchestration Guide](./orchestration.md)
-- [Model Routing](./model-routing.md)
 - [Skill Policy](./skill-policy.md)
 - [Agent Mapping](./agent-mapping.md)

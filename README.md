@@ -36,6 +36,7 @@ Cerebro will assemble the team, research your codebase, and execute — no furth
 | `/cerebro-start-work` | Execute the latest plan. Cerebro creates an execution team coordinated by Cyclops. |
 | `/cerebro-doctor` | Validate command names, native agent configuration, plan/state schemas, task result hooks, and stop hook health. |
 | `/cerebro-index` | Build `.cerebro/project-context.md` with an indexing team. |
+| `/cerebro-upgrade <ref>` | Sync template-owned files from the upstream repo at a tagged release. Presents diffs for merge-owned files; gates all writes. Supports `--dry-run`, `--strict`, and `--only <glob>`. |
 
 ---
 
@@ -123,9 +124,10 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
 │   ├── commands/                      # Slash commands
 │   │   ├── cerebro-doctor.md
 │   │   ├── cerebro-index.md
-│   │   ├── to-me-my-x-men.md
 │   │   ├── cerebro-plan.md
-│   │   └── cerebro-start-work.md
+│   │   ├── cerebro-start-work.md
+│   │   ├── cerebro-upgrade.md
+│   │   └── to-me-my-x-men.md
 │   └── hooks/
 │       ├── check-pending-todos.sh        # Stop hook — enforces todo completion
 │       ├── check-task-result-envelope.sh # SubagentStop hook — enforces TASK_RESULT
@@ -133,15 +135,19 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
 └── .cerebro/
     ├── schemas/
     │   ├── boulder.schema.json        # Execution state schema
-    │   └── team-run.schema.json       # Agent team run manifest schema
+    │   ├── team-run.schema.json       # Agent team run manifest schema
+    │   ├── upgrade-manifest.schema.json  # Upgrade manifest schema
+    │   └── upgrade-state.schema.json  # Upgrade state baseline schema
     ├── templates/
     │   ├── plan.md                    # Canonical Professor X plan schema
     │   ├── project-context.md         # Canonical repository index schema
     │   └── team-run.json              # Agent team run manifest template
+    ├── upgrade-manifest.json          # File ownership for /cerebro-upgrade
     ├── project-context.md             # Repository index created by /cerebro-index
     ├── plans/                         # Plans written by Cerebro from Professor X drafts
     ├── notepads/                      # Per-plan wisdom (learnings, decisions)
     ├── team-runs/                     # Per-team coordination audit logs
+    ├── upgrade-cache/                 # Shallow upstream clones (gitignored)
     └── boulder.json                   # Execution state (created at /cerebro-start-work)
 ```
 
@@ -273,7 +279,7 @@ Agent teams require Claude Code v2.1.32 or later and are experimental. Cerebro u
 
 ### Native Agent Configuration
 
-Agent model, effort, and tool boundaries live in each native role frontmatter. Agent teams reuse those role definitions for teammates. See [docs/guide/model-routing.md](docs/guide/model-routing.md).
+Agent model, effort, and tool boundaries live in each native role frontmatter. Agent teams reuse those role definitions for teammates.
 
 ### Skills
 

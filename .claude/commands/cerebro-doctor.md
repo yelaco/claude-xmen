@@ -17,6 +17,7 @@ Required:
 - `.claude/commands/cerebro-index.md`
 - `.claude/commands/cerebro-plan.md`
 - `.claude/commands/cerebro-start-work.md`
+- `.claude/commands/cerebro-upgrade.md`
 - `.claude/commands/to-me-my-x-men.md`
 
 Forbidden:
@@ -274,3 +275,90 @@ printf '{"hook_event_name":"SubagentStop","agent_type":"wolverine","last_assista
 ```
 
 Expected: malformed result blocks; valid result allows stopping.
+
+### 14. Upgrade Manifest and State
+
+Check for the upgrade manifest. If absent, this is informational only — not a blocking failure. Existing projects that have not yet run `/cerebro-upgrade` will not have this file.
+
+```bash
+if [ ! -f .cerebro/upgrade-manifest.json ]; then
+  echo "no manifest present (informational — run /cerebro-upgrade to initialize)"
+else
+  python3 -m json.tool .cerebro/upgrade-manifest.json > /dev/null && echo "upgrade-manifest.json valid"
+fi
+```
+
+Check for the upgrade manifest schema:
+
+```bash
+test -f .cerebro/schemas/upgrade-manifest.schema.json && python3 -m json.tool .cerebro/schemas/upgrade-manifest.schema.json > /dev/null && echo "upgrade-manifest.schema.json valid"
+```
+
+Check for the upgrade state schema:
+
+```bash
+test -f .cerebro/schemas/upgrade-state.schema.json && python3 -m json.tool .cerebro/schemas/upgrade-state.schema.json > /dev/null && echo "upgrade-state.schema.json valid"
+```
+
+Validate manifest entry structure (if manifest is present):
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+import json
+manifest_path = Path(".cerebro/upgrade-manifest.json")
+if not manifest_path.exists():
+    print("no manifest present (informational)")
+    raise SystemExit(0)
+manifest = json.loads(manifest_path.read_text())
+valid_ownerships = {"template", "merge", "user"}
+failed = []
+entries = manifest.get("entries", [])
+if not isinstance(entries, list) or len(entries) == 0:
+    failed.append("entries must be a non-empty array")
+for i, entry in enumerate(entries):
+    if "path" not in entry:
+        failed.append(f"entry {i}: missing 'path'")
+    if "ownership" not in entry:
+        failed.append(f"entry {i}: missing 'ownership'")
+    elif entry["ownership"] not in valid_ownerships:
+        failed.append(f"entry {i}: invalid ownership '{entry['ownership']}' (must be template, merge, or user)")
+if failed:
+    for f in failed:
+        print(f)
+    raise SystemExit(1)
+print(f"manifest entries ok ({len(entries)} entries)")
+PY
+```
+
+If `.cerebro/upgrade-state.json` exists, validate required fields:
+
+```bash
+python3 - <<'PY'
+import json, re
+from pathlib import Path
+state_path = Path(".cerebro/upgrade-state.json")
+if not state_path.exists():
+    print("no upgrade-state.json present (informational — will be written after first /cerebro-upgrade)")
+    raise SystemExit(0)
+state = json.loads(state_path.read_text())
+required = {"version", "applied_ref", "applied_sha", "applied_at", "hashes"}
+missing = sorted(required - set(state))
+if missing:
+    print(f"upgrade-state.json missing fields: {missing}")
+    raise SystemExit(1)
+if state.get("version") != 1:
+    print(f"unexpected version: {state.get('version')}")
+    raise SystemExit(1)
+sha = state.get("applied_sha", "")
+if not re.match(r"^[0-9a-f]{40}$", sha):
+    print(f"applied_sha is not a 40-char hex: {sha!r}")
+    raise SystemExit(1)
+if not isinstance(state.get("hashes"), dict):
+    print("hashes must be an object")
+    raise SystemExit(1)
+print(f"upgrade-state.json valid (ref={state['applied_ref']}, sha={sha[:8]}...)")
+PY
+```
+
+Expected: manifest and schemas parse as valid JSON, entries have required keys and valid ownership enum, and upgrade-state.json (if present) has all required fields. If upgrade-manifest.json is absent, section 14 exits zero with an informational message.

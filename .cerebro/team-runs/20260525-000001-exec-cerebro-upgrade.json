@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "run_id": "20260525-000001-exec-cerebro-upgrade",
+  "command": "/cerebro-start-work",
+  "status": "cleaned_up",
+  "lead": "cerebro",
+  "team_name": "exec-cerebro-upgrade",
+  "objective": "Implement /cerebro-upgrade command — versioned file sync from upstream GitHub template into derived projects.",
+  "risk_level": "MEDIUM",
+  "started_at": "2026-05-25T00:00:00Z",
+  "updated_at": "2026-05-25T00:00:00Z",
+  "teammates": [
+    {
+      "name": "cyclops-field",
+      "agent_type": "cyclops",
+      "status": "pending",
+      "responsibility": "Coordinate execution: assign tasks, verify results, report to Cerebro when done",
+      "last_signal": ""
+    },
+    {
+      "name": "wolverine-implementation",
+      "agent_type": "wolverine",
+      "status": "pending",
+      "responsibility": "All 8 implementation and verification tasks",
+      "last_signal": ""
+    }
+  ],
+  "ownership": [
+    { "path": ".cerebro/upgrade-manifest.json", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 1" },
+    { "path": ".cerebro/schemas/upgrade-manifest.schema.json", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 1" },
+    { "path": ".claude/commands/cerebro-upgrade.md", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 2" },
+    { "path": ".gitignore", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 2" },
+    { "path": ".cerebro/schemas/upgrade-state.schema.json", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 3" },
+    { "path": ".claude/commands/cerebro-doctor.md", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 6" },
+    { "path": "CLAUDE.md", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 7" },
+    { "path": "docs/guide/cerebro-workflow.md", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 7" },
+    { "path": "README.md", "owner": "wolverine-implementation", "reviewer": "cyclops-field", "notes": "Task 7" }
+  ],
+  "mailbox_decisions": [],
+  "approvals": [
+    { "gate": "Gate A — Merge-owned file conflict", "status": "pending", "decided_at": null, "notes": "User-facing gate in /cerebro-upgrade runtime, not a planning gate" },
+    { "gate": "Gate B — Manifest update", "status": "pending", "decided_at": null, "notes": "User-facing gate in /cerebro-upgrade runtime" },
+    { "gate": "Gate C — Strict-mode template overwrite", "status": "pending", "decided_at": null, "notes": "User-facing gate in /cerebro-upgrade runtime" },
+    { "gate": "Gate D — Dirty working tree", "status": "pending", "decided_at": null, "notes": "User-facing gate in /cerebro-upgrade runtime" }
+  ],
+  "verification": [
+    { "command": "python3 -m json.tool .cerebro/upgrade-manifest.json > /dev/null", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 1" },
+    { "command": "python3 -m json.tool .cerebro/schemas/upgrade-manifest.schema.json > /dev/null", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 1" },
+    { "command": "test -f .claude/commands/cerebro-upgrade.md && rg -n 'Gate A|Gate B|Gate C|Gate D|--dry-run' .claude/commands/cerebro-upgrade.md", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 2" },
+    { "command": "grep 'upgrade-cache' .gitignore", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 2" },
+    { "command": "python3 -m json.tool .cerebro/schemas/upgrade-state.schema.json > /dev/null", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 3" },
+    { "command": "rg -n 'cerebro-upgrade.md' .claude/commands/cerebro-doctor.md", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 6" },
+    { "command": "rg -n 'cerebro-upgrade' CLAUDE.md README.md docs/guide/", "status": "NOT RUN", "by": "cyclops-field", "notes": "Task 7" }
+  ],
+  "cleanup": {
+    "team_stopped": true,
+    "pending_todos_clear": true,
+    "notes": "Cyclops and Wolverine shutdown_approved. TeamDelete complete."
+  }
+}

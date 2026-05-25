@@ -146,6 +146,7 @@ All plans, state, and wisdom live in `.cerebro/`:
 - `/cerebro-start-work` — Create an execution team to execute or resume the latest plan
 - `/cerebro-doctor` — Validate command names, native agent configuration, hooks, plan template, and state schema
 - `/cerebro-index` — Build or refresh `.cerebro/project-context.md` for faster future work
+- `/cerebro-upgrade <ref> [--dry-run] [--strict] [--only <glob>]` — Sync template-owned files from the upstream `claude-xmen` repo at a tagged release; presents unified diffs for merge-owned files and gates all destructive writes
 
 ## Wisdom Accumulation
 

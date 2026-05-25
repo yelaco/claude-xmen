@@ -23,13 +23,13 @@ This template uses X-Men names for Claude Code specialist prompts.
 ├── commands/
 │   ├── cerebro-plan.md
 │   ├── cerebro-start-work.md
+│   ├── cerebro-upgrade.md
 │   ├── cerebro-doctor.md
 │   ├── cerebro-index.md
 │   └── to-me-my-x-men.md
 └── hooks/
 
 .cerebro/
-├── agent-models.json
 ├── schemas/
 ├── templates/
 ├── project-context.md
