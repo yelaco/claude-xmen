@@ -2,6 +2,7 @@
 .cerebro/boulder.json
 .cerebro/.pending-todos
 .cerebro/upgrade-state.json
+.cerebro/project-context.md
 .cerebro/notepads/*/
 !.cerebro/notepads/.gitkeep
 
