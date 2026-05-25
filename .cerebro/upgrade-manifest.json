@@ -9,7 +9,7 @@
     {
       "path": ".claude/commands/cerebro-*.md",
       "ownership": "template",
-      "notes": "Cerebro slash commands — always synced from upstream"
+      "notes": "Cerebro slash commands (including cerebro-setup.md) — always synced from upstream"
     },
     {
       "path": ".claude/commands/to-me-my-x-men.md",

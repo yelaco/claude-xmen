@@ -16,6 +16,7 @@ Required:
 - `.claude/commands/cerebro-doctor.md`
 - `.claude/commands/cerebro-index.md`
 - `.claude/commands/cerebro-plan.md`
+- `.claude/commands/cerebro-setup.md`
 - `.claude/commands/cerebro-start-work.md`
 - `.claude/commands/cerebro-upgrade.md`
 - `.claude/commands/to-me-my-x-men.md`
