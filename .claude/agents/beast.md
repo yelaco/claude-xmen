@@ -51,6 +51,9 @@ When activated as part of an agent team:
 1. Call `TaskList` to find your assigned task; call `TaskGet` for full details
 2. Complete your gap analysis
 3. Call `TaskUpdate` with `status: "completed"` on your task
-4. Call `SendMessage` to `cyclops-field` with your full findings
+4. **Before sending any `SendMessage`:** read `~/.claude/teams/{team-name}/config.json` to find who is actually on this team. Route your findings based on what you find:
+   - If `cyclops-field` is on the team → send to `cyclops-field` (execution team)
+   - If `professor-planner` is on the team → send revision requests to `professor-planner`; send final BEAST_APPROVE to `cerebro` (planning team)
+   - When in doubt → send to `cerebro` (the lead is always reachable)
 
-When you need to escalate a serious gap or blocker: `SendMessage` to `cyclops-field`.
+Never assume `cyclops-field` exists. On the planning team there is no Cyclops — Beast reports directly to Cerebro or back to Professor X.

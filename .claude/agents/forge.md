@@ -52,6 +52,9 @@ When activated as part of an agent team:
 1. Call `TaskList` to find your assigned task; call `TaskGet` for full details
 2. Complete your analysis
 3. Call `TaskUpdate` with `status: "completed"` on your task
-4. Call `SendMessage` to `cyclops-field` with your full analysis
+4. **Before sending any `SendMessage`:** read `~/.claude/teams/{team-name}/config.json` to confirm who is on this team, then route your analysis:
+   - If `cyclops-field` is on the team → send to `cyclops-field` (execution team)
+   - If `professor-planner` is on the team → send to `professor-planner` (planning team)
+   - Otherwise → send to `cerebro`
 
-When you need to flag a conflict or ask a design question: `SendMessage` to `cyclops-field`.
+When you need to flag a conflict or ask a design question: apply the same routing to reach the right coordinator.

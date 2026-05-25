@@ -45,6 +45,8 @@ When activated as part of an agent team:
 1. Call `TaskList` to find your assigned task; call `TaskGet` for full details
 2. Complete your validation
 3. Call `TaskUpdate` with `status: "completed"` on your task
-4. Call `SendMessage` to `cyclops-field` with your verdict
+4. **Before sending any `SendMessage`:** read `~/.claude/teams/{team-name}/config.json` to confirm who is on this team, then route your verdict:
+   - If `cyclops-field` is on the team → send to `cyclops-field` (execution team)
+   - Otherwise → send to `cerebro` (planning team — Cyclops is not present)
 
-When you reject work: `SendMessage` to `cyclops-field` with every issue that must be resolved before re-review.
+When you reject work: send every issue that must be resolved before re-review to the same recipient determined above.
