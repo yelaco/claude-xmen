@@ -1,13 +1,1 @@
-# Cerebro runtime state (per-project, not template)
-.cerebro/boulder.json
-.cerebro/.pending-todos
-.cerebro/upgrade-state.json
-.cerebro/project-context.md
-.cerebro/notepads/*/
-!.cerebro/notepads/.gitkeep
-
-# Keep plans tracked (they are outputs of Professor X)
-# .cerebro/plans/ is intentionally tracked
-
-# Upgrade cache — shallow clones of upstream refs for /cerebro-upgrade
-.cerebro/upgrade-cache/
+# Cerebro runtime ignores live in .cerebro/.gitignore

@@ -42,6 +42,11 @@
       "notes": "Canonical skill policy doc — always synced from upstream"
     },
     {
+      "path": ".cerebro/.gitignore",
+      "ownership": "template",
+      "notes": "Cerebro runtime ignore rules — always synced from upstream; kept separate so template users' root .gitignore is never modified"
+    },
+    {
       "path": "CLAUDE.md",
       "ownership": "merge",
       "notes": "Primary Cerebro identity — upstream changes should be reviewed and merged carefully"
