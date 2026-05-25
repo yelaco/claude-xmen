@@ -58,8 +58,8 @@
     },
     {
       "path": "README.md",
-      "ownership": "merge",
-      "notes": "Project README — upstream improvements should be reviewed and merged"
+      "ownership": "user",
+      "notes": "Project README — belongs to the adopting project; never touched by upgrade"
     },
     {
       "path": ".claude/settings.json",
