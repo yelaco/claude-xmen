@@ -42,14 +42,19 @@
       "notes": "Canonical skill policy doc — always synced from upstream"
     },
     {
+      "path": ".cerebro/cerebro-identity.md",
+      "ownership": "template",
+      "notes": "Cerebro runtime identity and orchestration instructions — always synced from upstream; root CLAUDE.md imports this file"
+    },
+    {
       "path": ".cerebro/.gitignore",
       "ownership": "template",
       "notes": "Cerebro runtime ignore rules — always synced from upstream; kept separate so template users' root .gitignore is never modified"
     },
     {
       "path": "CLAUDE.md",
-      "ownership": "merge",
-      "notes": "Primary Cerebro identity — upstream changes should be reviewed and merged carefully"
+      "ownership": "user",
+      "notes": "Project-specific instructions; imports .cerebro/cerebro-identity.md — never touched by upgrade"
     },
     {
       "path": "README.md",

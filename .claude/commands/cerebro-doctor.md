@@ -151,7 +151,7 @@ Expected: all required sections and task fields are present.
 
 ```bash
 test -f .cerebro/docs/skill-policy.md
-rg -n "Skill Policy|Skills are optional" CLAUDE.md .claude/agents/wolverine.md .claude/agents/storm.md .claude/agents/sage.md .cerebro/docs/skill-policy.md
+rg -n "Skill Policy|Skills are optional" .cerebro/cerebro-identity.md .claude/agents/wolverine.md .claude/agents/storm.md .claude/agents/sage.md .cerebro/docs/skill-policy.md
 ```
 
 Expected: core policy exists and key skill-using agents mention that skills are optional.
@@ -209,7 +209,7 @@ test -f .cerebro/templates/team-run.json
 test -f .cerebro/schemas/team-run.schema.json
 python3 -m json.tool .cerebro/templates/team-run.json > /dev/null
 python3 -m json.tool .cerebro/schemas/team-run.schema.json > /dev/null
-rg -n "team-runs|team-run.schema.json|Team Run Manifest|TEAM_RUN_PATCH" CLAUDE.md README.md .claude/commands .claude/agents/cyclops.md docs .cerebro/project-context.md
+rg -n "team-runs|team-run.schema.json|Team Run Manifest|TEAM_RUN_PATCH" .cerebro/cerebro-identity.md README.md .claude/commands .claude/agents/cyclops.md .cerebro/docs .cerebro/project-context.md
 ```
 
 Expected: team run manifest template/schema are valid JSON and all team workflows mention the run manifest.
@@ -239,7 +239,7 @@ if env.get("CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS") != "1":
     raise SystemExit(1)
 print("agent teams enabled")
 PY
-rg -n "agent team|teammate|team mailbox|shared task list|NO NESTED TEAMS|CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS" CLAUDE.md README.md .claude/commands .claude/agents/cyclops.md docs
+rg -n "agent team|teammate|team mailbox|shared task list|NO NESTED TEAMS|CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS" .cerebro/cerebro-identity.md README.md .claude/commands .claude/agents/cyclops.md .cerebro/docs
 ```
 
 Expected: experimental agent teams are enabled and team-mode guidance exists.
