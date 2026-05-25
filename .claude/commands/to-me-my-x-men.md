@@ -10,12 +10,27 @@ Do not implement the task alone if it can be partitioned. Create a real agent te
 
 ### 1. Risk Gate
 
-Classify risk before execution:
-- `LOW`: proceed.
-- `MEDIUM`: proceed, but record assumptions in the final report.
-- `HIGH`: ask the user to explicitly confirm the high-risk action before continuing.
+Classify the task on two dimensions before proceeding:
 
-High-risk examples: destructive file operations, migrations, production config, credentials, auth policy, billing/payment behavior, dependency upgrades with broad blast radius, external mutating API calls, or git history rewrites.
+**Scope clarity** — is the objective, acceptance criteria, and affected surface well-understood?
+- Clear: the task is specific, bounded, and unambiguous.
+- Ambiguous: the task has unclear scope, competing interpretations, or unknown affected surface.
+
+**Risk level** — what is the blast radius of a wrong implementation?
+- `LOW`: isolated, easily reversible, no shared state.
+- `MEDIUM`: moderate scope, some shared state, rollback is straightforward.
+- `HIGH`: destructive ops, migrations, production config, credentials, auth policy, billing, dependency upgrades with broad blast radius, external mutating API calls, git history rewrites.
+
+Routing decision:
+
+| Scope | Risk | Action |
+|---|---|---|
+| Clear | LOW | Proceed with autonomous execution. |
+| Clear | MEDIUM | Proceed, record assumptions in the final report. |
+| Ambiguous | any | Stop. Tell the user the task needs scoping. Recommend `/cerebro-plan` to define acceptance criteria and approval gates before executing. Do not proceed unless the user explicitly says to continue anyway. |
+| Clear | HIGH | Stop. Warn the user that high-risk autonomous execution skips the planning phase where approval gates and rollback strategy would normally be defined. Recommend `/cerebro-plan` + `/cerebro-start-work`. Do not proceed unless the user explicitly confirms they want autonomous execution despite the risk. |
+
+`/to-me-my-x-men` is optimised for tasks that are already well-understood and bounded. For complex, ambiguous, or high-risk work, `/cerebro-plan` + `/cerebro-start-work` produces higher-quality outcomes because Professor X defines acceptance criteria and approval gates before a single line is written.
 
 ### 2. Create The Team
 
