@@ -17,13 +17,20 @@ cp -r /path/to/claude-xmen/.cerebro .cerebro
 cp /path/to/claude-xmen/CLAUDE.md CLAUDE.md
 ```
 
-Open Claude Code and run your first command:
+Open Claude Code and run setup:
 
 ```
+/cerebro-setup
+```
+
+This wires `CLAUDE.md` with the Cerebro identity import if needed, verifies the installation is intact, and checks whether a newer upstream release is available.
+
+Then index your codebase and start working:
+
+```
+/cerebro-index
 /to-me-my-x-men add a REST API for user authentication
 ```
-
-Cerebro will assemble the team, research your codebase, and execute — no further input required.
 
 ---
 
@@ -31,11 +38,12 @@ Cerebro will assemble the team, research your codebase, and execute — no furth
 
 | Command | What it does |
 |---|---|
+| `/cerebro-setup` | Wire `CLAUDE.md`, verify the installation, and check for upstream upgrades. Run after cloning. |
 | `/to-me-my-x-men [task]` | Full autonomous mode. Cerebro creates an agent team, assigns teammates, lets them coordinate, then verifies and synthesizes the result. |
 | `/cerebro-plan [task]` | Interview-based planning. Cerebro creates a planning team so Professor X, Nightcrawler, Sage, Forge, Beast, and Emma Frost can coordinate. |
 | `/cerebro-start-work` | Execute the latest plan. Cerebro creates an execution team coordinated by Cyclops. |
-| `/cerebro-doctor` | Validate command names, native agent configuration, plan/state schemas, task result hooks, and stop hook health. |
 | `/cerebro-index` | Build `.cerebro/project-context.md` with an indexing team. |
+| `/cerebro-doctor` | Validate command names, native agent configuration, plan/state schemas, task result hooks, and stop hook health. |
 | `/cerebro-upgrade <ref>` | Sync template-owned files from the upstream repo at a tagged release. Presents diffs for merge-owned files; gates all writes. Supports `--dry-run`, `--strict`, and `--only <glob>`. |
 
 ---
@@ -64,7 +72,7 @@ Every non-trivial workflow uses an agent team so teammates can share a task list
 User
  │
  ▼
-Cerebro (CLAUDE.md, team lead)
+Cerebro (CLAUDE.md → .cerebro/cerebro-identity.md, team lead)
  │
  ├── /to-me-my-x-men ──► Agent Team
  │                         ├── cyclops-field (task list / gates)
@@ -108,7 +116,7 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
 
 ```
 .
-├── CLAUDE.md                          # Cerebro — main agent identity
+├── CLAUDE.md                          # Imports Cerebro identity; add project-specific instructions here
 ├── .claude/
 │   ├── settings.json                  # Wires hooks, permissions, and team env
 │   ├── agents/                        # 9 native teammate definitions
@@ -122,6 +130,7 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
 │   │   ├── nightcrawler.md
 │   │   └── sage.md
 │   ├── commands/                      # Slash commands
+│   │   ├── cerebro-setup.md
 │   │   ├── cerebro-doctor.md
 │   │   ├── cerebro-index.md
 │   │   ├── cerebro-plan.md
@@ -133,6 +142,13 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
 │       ├── check-task-result-envelope.sh # SubagentStop hook — enforces TASK_RESULT
 │       └── log-team-event.sh             # Team hooks — logs task/idle events
 └── .cerebro/
+    ├── cerebro-identity.md            # Cerebro runtime identity (template-owned, synced by /cerebro-upgrade)
+    ├── docs/                          # Workflow reference docs
+    │   ├── overview.md
+    │   ├── orchestration.md
+    │   ├── agent-mapping.md
+    │   ├── cerebro-workflow.md
+    │   └── skill-policy.md
     ├── schemas/
     │   ├── boulder.schema.json        # Execution state schema
     │   ├── team-run.schema.json       # Agent team run manifest schema
@@ -155,15 +171,16 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
 
 ## Four Ways to Work
 
-**0. Index a project**
+**0. Set up and index**
 
-Best when copying Cerebro into a repo for the first time or after major project changes.
+Best when copying Cerebro into a repo for the first time.
 
 ```
+/cerebro-setup
 /cerebro-index
 ```
 
-Cerebro writes `.cerebro/project-context.md` with stack, entrypoints, commands, conventions, and risky areas.
+`/cerebro-setup` wires `CLAUDE.md` and checks for upstream upgrades. `/cerebro-index` writes `.cerebro/project-context.md` with stack, entrypoints, commands, conventions, and risky areas.
 
 **1. Autonomous (fire and forget)**
 
@@ -197,6 +214,14 @@ Tab-complete to any role in Claude Code for targeted use, but Cerebro workflows 
 
 ---
 
+## Customising CLAUDE.md
+
+`CLAUDE.md` is yours — add project context, conventions, stack details, or any instructions specific to your repo. The Cerebro runtime loads from `.cerebro/cerebro-identity.md` via an `@import`, so your additions sit alongside the Cerebro behaviour without conflict.
+
+`/cerebro-upgrade` never touches `CLAUDE.md`. Template changes sync cleanly through `.cerebro/cerebro-identity.md`.
+
+---
+
 ## Configuration
 
 Hooks are registered in `.claude/settings.json`:
@@ -207,56 +232,31 @@ Hooks are registered in `.claude/settings.json`:
     "SubagentStop": [
       {
         "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/check-task-result-envelope.sh"
-          }
-        ]
+        "hooks": [{ "type": "command", "command": "bash .claude/hooks/check-task-result-envelope.sh" }]
       }
     ],
     "Stop": [
       {
         "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/check-pending-todos.sh"
-          }
-        ]
+        "hooks": [{ "type": "command", "command": "bash .claude/hooks/check-pending-todos.sh" }]
       }
     ],
     "TaskCreated": [
       {
         "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/log-team-event.sh"
-          }
-        ]
+        "hooks": [{ "type": "command", "command": "bash .claude/hooks/log-team-event.sh" }]
       }
     ],
     "TaskCompleted": [
       {
         "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/log-team-event.sh"
-          }
-        ]
+        "hooks": [{ "type": "command", "command": "bash .claude/hooks/log-team-event.sh" }]
       }
     ],
     "TeammateIdle": [
       {
         "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash .claude/hooks/log-team-event.sh"
-          }
-        ]
+        "hooks": [{ "type": "command", "command": "bash .claude/hooks/log-team-event.sh" }]
       }
     ]
   }
