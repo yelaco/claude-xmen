@@ -43,7 +43,22 @@ Spawn all teammates via the `Agent` tool with **both** `team_name` and `name` se
 - `beast-review` using the **beast** agent type — challenges gaps in the draft
 - `emma-validation` using the **emma-frost** agent type — validates when risk is HIGH
 
-Nightcrawler, Sage, and Forge each call `TaskList`, find and claim their task via `TaskUpdate` (set owner + status `in_progress`), complete their work, then `SendMessage` their findings to `professor-planner`. Professor X uses those findings to draft the plan, marks its task done with `TaskUpdate status: "completed"`, and `SendMessage`s a `PLAN_DRAFT` to Cerebro. Beast and Emma Frost validate in sequence as their tasks unblock.
+**Every spawn prompt must include a `## Team Roster` section** listing every active teammate by exact name. Example:
+
+```
+## Team Roster (only message these names)
+- professor-planner
+- nightcrawler-recon
+- sage-research
+- forge-architecture
+- beast-review
+```
+
+This roster is the only source of truth for who can receive a `SendMessage` on this team. Teammates must not guess or infer names beyond this list.
+
+Nightcrawler, Sage, and Forge each call `TaskList`, find and claim their task via `TaskUpdate` (set owner + status `in_progress`), complete their work, then `SendMessage` their findings to `professor-planner`. Professor X writes the full `PLAN_DRAFT` to `.cerebro/notepads/{plan-slug}/plan-draft.md`, marks its task done with `TaskUpdate status: "completed"`, and sends Cerebro a short confirmation message with the file path. Beast and Emma Frost validate in sequence as their tasks unblock.
+
+When Cerebro receives Professor X's confirmation, read the plan draft from the file path — do not expect full plan content via `SendMessage`.
 
 Teammates resolve disagreements directly via `SendMessage` before the plan is finalized. Do not allow teammates to write to `.cerebro/plans/` — only Cerebro writes the final plan.
 

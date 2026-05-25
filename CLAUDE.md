@@ -92,6 +92,10 @@ The `.claude/agents/` files are also selectable directly via the Tab agent picke
 
 All non-trivial workflows use the native Claude Code agent team tools: `TeamCreate`, `TaskCreate`, `TaskUpdate`, `Agent` (with `team_name` + `name`), `SendMessage`, and `TeamDelete`. Cerebro never relays messages between teammates — they communicate directly via `SendMessage` and the shared task list.
 
+**Roster in every spawn prompt.** Each Agent spawn prompt must include a `## Team Roster` section listing every active teammate by exact name. Teammates only know about each other through this list and through `~/.claude/teams/{team-name}/config.json` — they have no automatic awareness of who else is on the team. Never assume a teammate exists; never message a name not in the roster.
+
+**File-first for large deliverables.** Large artifacts (PLAN_DRAFT, long TASK_RESULTs) must be written to a file first, then a short confirmation with the file path sent via `SendMessage`. `SendMessage` truncates large payloads in transit — Cerebro reads the file directly rather than expecting full content in the message body.
+
 ### Planning
 
 For `/cerebro-plan` or planning-style requests:

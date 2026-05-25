@@ -85,6 +85,7 @@ When activated as part of an agent team:
 1. Call `TaskList` to find your assigned task; call `TaskGet` for full details
 2. Draft the plan
 3. Call `TaskUpdate` with `status: "completed"` on your task
-4. Call `SendMessage` to Cerebro (the team lead) — not Cyclops — with your `PLAN_DRAFT` or `CLARIFY` response. Planning decisions go directly to the lead.
+4. Write the full `PLAN_DRAFT` content to `.cerebro/notepads/{plan-slug}/plan-draft.md` — do NOT paste the full plan into `SendMessage` (large payloads are truncated in transit).
+5. Call `SendMessage` to Cerebro (the team lead) with a short confirmation only: `PLAN_DRAFT written to .cerebro/notepads/{plan-slug}/plan-draft.md`. Planning decisions go directly to the lead, never to Cyclops.
 
-When you need research or review input that Nightcrawler or Beast should provide: `SendMessage` to `cyclops-field` describing what question each specialist should answer.
+**Before sending any `SendMessage` to a teammate:** read `~/.claude/teams/{team-name}/config.json` to get the exact names of who is on this team. Do not assume or guess teammate names — only message names that appear in the config `members` array. Cyclops (`cyclops-field`) is never present on the planning team.

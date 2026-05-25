@@ -45,7 +45,9 @@ Spawn all teammates via the `Agent` tool with **both** `team_name` and `name` se
 - `beast-review` using the **beast** agent type
 - `emma-validation` using the **emma-frost** agent type — only include when risk is HIGH
 
-Cyclops will call `TaskList`, assign unblocked tasks to teammates via `TaskUpdate`, and message them via `SendMessage`. Teammates complete their work, call `TaskUpdate` to mark tasks done, and `SendMessage` their results to Cyclops. Cyclops verifies results and `SendMessage`s a `CYCLOPS_REPORT` to Cerebro when all tasks are complete.
+**Every spawn prompt must include a `## Team Roster` section** listing every active teammate by exact name. Teammates only know who is on the team through this roster and through `~/.claude/teams/{team-name}/config.json` — they have no automatic awareness of each other.
+
+Cyclops will call `TaskList`, assign unblocked tasks to teammates via `TaskUpdate`, and message them via `SendMessage`. Teammates complete their work, call `TaskUpdate` to mark tasks done, and `SendMessage` their results to Cyclops. Cyclops verifies results independently (runs verify commands itself — does not trust self-reported PASS) and `SendMessage`s a `CYCLOPS_REPORT` to Cerebro when all tasks are complete.
 
 Cerebro does not relay messages between teammates. Teammates communicate directly through `SendMessage` and the shared task list.
 
