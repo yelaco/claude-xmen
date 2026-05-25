@@ -49,8 +49,8 @@ If absent, run the bootstrap flow:
 - Write the confirmed manifest to `.cerebro/upgrade-manifest.json`.
 
 Canonical defaults:
-- **template** (overwrite silently): `.claude/agents/*.md`, `.claude/commands/cerebro-*.md`, `.claude/commands/to-me-my-x-men.md`, `.claude/hooks/*.sh`, `.cerebro/schemas/*.json`, `.cerebro/templates/*.md`, `.cerebro/templates/*.json`, `.cerebro/docs/skill-policy.md`, `.cerebro/cerebro-identity.md`, `.claude/commands/cerebro-upgrade.md`
-- **merge** (review conflicts, Gate A): `.claude/settings.json`, `.cerebro/docs/*.md` (excluding `skill-policy.md`)
+- **template** (overwrite silently): `.claude/agents/*.md`, `.claude/commands/cerebro-*.md`, `.claude/commands/to-me-my-x-men.md`, `.claude/hooks/*.sh`, `.cerebro/schemas/*.json`, `.cerebro/templates/*.md`, `.cerebro/templates/*.json`, `.cerebro/cerebro-identity.md`, `.claude/commands/cerebro-upgrade.md`
+- **merge** (review conflicts, Gate A): `.claude/settings.json`, `.cerebro/docs/*.md`
 - **user** (never touched): `CLAUDE.md`, `README.md`, `.cerebro/plans/**`, `.cerebro/notepads/**`, `.cerebro/boulder.json`, `.cerebro/.pending-todos`, `.cerebro/team-runs/**`, `.cerebro/project-context.md`
 
 If the manifest is present, load it as-is. The local manifest's ownership entries are authoritative for this run.
