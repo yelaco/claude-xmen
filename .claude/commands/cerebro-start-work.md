@@ -94,9 +94,11 @@ Do not mark execution complete until:
 ### 8. Cleanup
 
 When the team is done:
-1. Call `SendMessage` with `{type: "shutdown_request"}` to every active teammate by name
-2. Wait for their `{type: "shutdown_response"}` acknowledgements
-3. Call `TeamDelete` to clean up team files
+1. Call `SendMessage` with `{type: "prepare_shutdown"}` to every active teammate by name
+2. Wait for `{type: "ready_for_shutdown"}` from **every** teammate before continuing — do not proceed until all have replied
+3. Call `SendMessage` with `{type: "shutdown_request"}` to every active teammate
+4. Wait for their `{type: "shutdown_response"}` acknowledgements
+5. Call `TeamDelete` to clean up team files
 4. Update `.cerebro/team-runs/{run-id}.json` cleanup status to `cleaned_up`
 
 ### 9. Final Report

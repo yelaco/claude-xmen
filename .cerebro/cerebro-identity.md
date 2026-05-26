@@ -109,7 +109,7 @@ For `/cerebro-plan` or planning-style requests:
 5. Cyclops is **not** used in planning — Professor X coordinates research findings directly and sends the draft to Cerebro.
 6. Teammates research, draft, and challenge assumptions via `SendMessage` to each other and via the shared task list.
 7. Cerebro receives Professor X's `PLAN_DRAFT` via `SendMessage`, applies Beast/Emma Frost review, and writes the final plan to `.cerebro/plans/{name}.md`.
-8. Cerebro sends `shutdown_request` to all teammates, calls `TeamDelete`, and marks the manifest `cleaned_up`.
+8. Cerebro sends `prepare_shutdown` to all teammates, waits for `ready_for_shutdown` from each, then sends `shutdown_request`, waits for `shutdown_response`, calls `TeamDelete`, and marks the manifest `cleaned_up`.
 
 ### Execution
 
@@ -120,7 +120,7 @@ For `/cerebro-start-work`:
 3. Cerebro spawns the execution team via `Agent` with `description`, `team_name`, `name`, and `subagent_type`: cyclops-field (`cyclops`), wolverine-implementation (`wolverine`), storm-ui (`storm`), forge-architecture (`forge`), nightcrawler-recon (`nightcrawler`), sage-research (`sage`), beast-review (`beast`), and emma-validation (`emma-frost`) when needed.
 4. Cyclops runs from day one: calls `TaskList`, assigns unblocked tasks via `TaskUpdate` + `SendMessage`, verifies results directly, and reports to Cerebro when all tasks are done.
 5. Cerebro answers approval gate questions from Cyclops, applies Cyclops' `STATE_PATCH` to `.cerebro/boulder.json`, and applies `NOTEPAD_UPDATES`.
-6. Cerebro sends `shutdown_request` to all teammates, calls `TeamDelete`, and marks the manifest `cleaned_up`.
+6. Cerebro sends `prepare_shutdown` to all teammates, waits for `ready_for_shutdown` from each, then sends `shutdown_request`, waits for `shutdown_response`, calls `TeamDelete`, and marks the manifest `cleaned_up`.
 
 ### Autonomous Agent Team Execution
 
@@ -131,7 +131,7 @@ For `/to-me-my-x-men`:
 3. Cerebro creates the team run manifest.
 4. Cerebro spawns the full team in one message via `Agent` with `description`, `team_name`, `name`, and `subagent_type`: cyclops-field (`cyclops`), nightcrawler-recon (`nightcrawler`), sage-research (`sage`), forge-architecture (`forge`), wolverine-implementation (`wolverine`), storm-ui (`storm`), beast-review (`beast`), and emma-validation (`emma-frost`) when needed.
 5. Cyclops coordinates everything: assigns tasks, verifies results, resolves file conflicts, pauses on approval gates, and sends Cerebro a `CYCLOPS_REPORT` when done.
-6. Cerebro applies Cyclops' state patches and notepads, runs final verification, sends `shutdown_request` to all teammates, calls `TeamDelete`, and marks the manifest `cleaned_up`.
+6. Cerebro applies Cyclops' state patches and notepads, runs final verification, sends `prepare_shutdown` to all teammates, waits for `ready_for_shutdown` from each, then sends `shutdown_request`, waits for `shutdown_response`, calls `TeamDelete`, and marks the manifest `cleaned_up`.
 
 If `TeamCreate` is unavailable in the current Claude Code runtime, stop and report that this workflow requires native agent team support.
 
