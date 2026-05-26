@@ -125,7 +125,7 @@ Ask the user whether they want to enable semble for semantic code search:
      
      Set semble status to `SKIPPED (no installer)` in the summary and do not create the integration file.
 
-3. Create `.cerebro/integrations/semble.md` with this exact content (copy from `.cerebro/integrations/semble.md` in the upstream template if present, otherwise write verbatim):
+3. Create `.cerebro/integrations/semble.md` **only if it does not already exist**. If the file is already present, skip this step — do not overwrite it. If it is absent, write it with this exact content (copy from `.cerebro/integrations/semble.md` in the upstream template if present, otherwise write verbatim):
 
 ```markdown
 # Semble — Semantic Code Search
