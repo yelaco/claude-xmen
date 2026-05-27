@@ -4,6 +4,9 @@ A self-contained Claude Code multi-agent orchestration template. Copy it into an
 
 Cerebro coordinates. Agents execute. You get results.
 
+![xmen](https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExcmVvNHc2bXkyaHluZHNkd3RpMG5udjd1OHNseWRjYjM0YnR1dDVvZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/vdWA6yzDlVDppSTWLm/giphy.gif)
+
+
 ---
 
 ## Quick Start
