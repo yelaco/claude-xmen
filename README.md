@@ -25,6 +25,14 @@ Open Claude Code and run setup:
 
 This wires `CLAUDE.md` with the Cerebro identity import if needed, verifies the installation is intact, and checks whether a newer upstream release is available.
 
+The template repo may include example runtime files (plans, team-runs) from its own development history. If you want a clean slate before starting, wipe them:
+
+```
+/cerebro-reset
+```
+
+This deletes all runtime state — plans, notepads, team-runs, boulder.json, and .pending-todos — and prompts for confirmation before touching anything. Config files, schemas, templates, and integrations are never touched.
+
 Then index your codebase and start working:
 
 ```
@@ -45,6 +53,7 @@ Then index your codebase and start working:
 | `/cerebro-index` | Build `.cerebro/project-context.md` with an indexing team. |
 | `/cerebro-doctor` | Validate command names, native agent configuration, plan/state schemas, task result hooks, and stop hook health. |
 | `/cerebro-upgrade <ref>` | Sync template-owned files from the upstream repo at a tagged release. Presents diffs for merge-owned files; gates all writes. Supports `--dry-run`, `--strict`, and `--only <glob>`. |
+| `/cerebro-reset` | Wipe all Cerebro runtime state — plans, notepads, team-runs, boulder.json, and .pending-todos. Prompts for confirmation before deleting. Use after copying the template to get a clean slate, or to unstick a broken run. |
 
 ---
 
@@ -134,6 +143,7 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
 │   │   ├── cerebro-doctor.md
 │   │   ├── cerebro-index.md
 │   │   ├── cerebro-plan.md
+│   │   ├── cerebro-reset.md
 │   │   ├── cerebro-start-work.md
 │   │   ├── cerebro-upgrade.md
 │   │   └── to-me-my-x-men.md

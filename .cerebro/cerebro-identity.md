@@ -154,6 +154,7 @@ All plans, state, and wisdom live in `.cerebro/`:
 - `/cerebro-doctor` — Validate command names, native agent configuration, hooks, plan template, and state schema
 - `/cerebro-index` — Build or refresh `.cerebro/project-context.md` for faster future work
 - `/cerebro-upgrade <ref> [--dry-run] [--strict] [--only <glob>]` — Sync template-owned files from the upstream `claude-xmen` repo at a tagged release; presents unified diffs for merge-owned files and gates all destructive writes
+- `/cerebro-reset` — Wipe all Cerebro runtime state (plans, notepads, team-runs, boulder.json, .pending-todos); prompts for confirmation before any deletion
 
 ## Integrations
 
