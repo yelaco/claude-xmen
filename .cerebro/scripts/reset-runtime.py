@@ -15,10 +15,13 @@ RUNTIME = {
     "team-runs/": Path(".cerebro/team-runs"),
 }
 TARGETS = list(RUNTIME.values())
-EMPTY_DIRS = [
+STUB_DIRS = [
     Path(".cerebro/plans"),
     Path(".cerebro/notepads"),
     Path(".cerebro/team-runs"),
+]
+EMPTY_DIRS = [
+    *STUB_DIRS,
     Path(".cerebro/pending-todos"),
 ]
 
@@ -54,7 +57,7 @@ def scan() -> None:
         if path.is_file():
             print(f"  {label:<20} FILE  {path.stat().st_size} bytes")
             continue
-        items = [item for item in path.rglob("*") if item.is_file()]
+        items = [item for item in path.rglob("*") if item.is_file() and item.name != ".gitkeep"]
         print(f"  {label:<20} DIR   {len(items)} runtime file(s)")
 
 
@@ -73,6 +76,8 @@ def reset() -> None:
 
     for path in EMPTY_DIRS:
         path.mkdir(parents=True, exist_ok=True)
+    for path in STUB_DIRS:
+        (path / ".gitkeep").touch()
 
     print("Removed:")
     for path in removed:
@@ -87,10 +92,10 @@ def verify() -> int:
     checks = {
         "boulder.json absent": not Path(".cerebro/boulder.json").exists(),
         ".pending-todos absent": not Path(".cerebro/.pending-todos").exists(),
-        "pending-todos/ absent or empty": _absent_or_empty(Path(".cerebro/pending-todos")),
-        "plans/ empty": _is_empty_dir(Path(".cerebro/plans")),
-        "notepads/ empty": _is_empty_dir(Path(".cerebro/notepads")),
-        "team-runs/ empty": _is_empty_dir(Path(".cerebro/team-runs")),
+        "pending-todos/ absent or empty": _absent_or_has_only_gitkeep(Path(".cerebro/pending-todos")),
+        "plans/ clean": _has_only_gitkeep_or_less(Path(".cerebro/plans")),
+        "notepads/ clean": _has_only_gitkeep_or_less(Path(".cerebro/notepads")),
+        "team-runs/ clean": _has_only_gitkeep_or_less(Path(".cerebro/team-runs")),
     }
 
     all_pass = True
@@ -106,14 +111,14 @@ def verify() -> int:
     return 0
 
 
-def _is_empty_dir(path: Path) -> bool:
+def _has_only_gitkeep_or_less(path: Path) -> bool:
     if not path.is_dir():
         return False
-    return not any(path.iterdir())
+    return all(item.name == ".gitkeep" for item in path.iterdir())
 
 
-def _absent_or_empty(path: Path) -> bool:
-    return not path.exists() or _is_empty_dir(path)
+def _absent_or_has_only_gitkeep(path: Path) -> bool:
+    return not path.exists() or _has_only_gitkeep_or_less(path)
 
 
 if __name__ == "__main__":

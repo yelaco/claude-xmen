@@ -10,8 +10,14 @@ project-context.md
 upgrade-cache/
 
 # Accumulated wisdom is per-project
-notepads/*/
+notepads/**
+!notepads/
+!notepads/.gitkeep
 
-plans/*
+plans/**
+!plans/
+!plans/.gitkeep
 
-team-runs/*
+team-runs/**
+!team-runs/
+!team-runs/.gitkeep

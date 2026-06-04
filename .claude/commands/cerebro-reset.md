@@ -68,7 +68,7 @@ python3 .cerebro/scripts/reset-runtime.py reset --confirm YES
 
 ### 4. Recreate Empty Runtime Directories
 
-The reset helper restores `.cerebro/plans/`, `.cerebro/notepads/`, `.cerebro/team-runs/`, and `.cerebro/pending-todos/` as local ignored directories so the runtime is immediately usable again.
+The reset helper restores `.cerebro/plans/`, `.cerebro/notepads/`, `.cerebro/team-runs/`, and `.cerebro/pending-todos/` so the runtime is immediately usable again. It preserves `.gitkeep` stubs for tracked empty directories.
 
 No separate command is needed for this step.
 
