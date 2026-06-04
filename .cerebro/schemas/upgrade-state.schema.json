@@ -27,7 +27,7 @@
     },
     "hashes": {
       "type": "object",
-      "description": "Map of relative file path to SHA-256 hex digest of committed content at time of upgrade. Covers all template-owned and merge-owned files present in the local tree after the upgrade.",
+      "description": "Map of relative file path to SHA-256 hex digest of post-upgrade local file content. Covers all template-owned and merge-owned files present in the local tree after the upgrade.",
       "additionalProperties": {
         "type": "string",
         "description": "SHA-256 hex digest (64 lowercase hex characters)",

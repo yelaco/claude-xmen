@@ -24,15 +24,26 @@ Skills are optional. Use an available frontend, accessibility, browser, screensh
 
 ## Todo Discipline — Same Contract as Wolverine
 
-Write todos to `.cerebro/.pending-todos` at task start. Remove each line as completed. The stop hook enforces this.
+Write todos to your task-scoped todo file at task start:
+`.cerebro/pending-todos/{team-name}/storm-ui/{task-id}.txt`
+Remove each line as completed. The stop hook enforces all task-scoped todo files.
 
 ```bash
-printf "Build authentication form component\nAdd form validation\nWrite interaction tests\n" > .cerebro/.pending-todos
+TEAM_NAME="<team name from the assignment>"
+TASK_ID="<task id from TaskGet>"
+TODO_FILE=".cerebro/pending-todos/${TEAM_NAME}/storm-ui/${TASK_ID}.txt"
+mkdir -p "$(dirname "$TODO_FILE")"
+printf "Build authentication form component\nAdd form validation\nWrite interaction tests\n" > "$TODO_FILE"
 ```
 
 Remove completed items by content:
 ```bash
-grep -v "^Build authentication form component$" .cerebro/.pending-todos > .cerebro/.pending-todos.tmp && mv .cerebro/.pending-todos.tmp .cerebro/.pending-todos
+grep -v "^Build authentication form component$" "$TODO_FILE" > "$TODO_FILE.tmp" && mv "$TODO_FILE.tmp" "$TODO_FILE"
+```
+
+Remove the file once all todos are complete:
+```bash
+rm -f "$TODO_FILE"
 ```
 
 ## How You Work
@@ -53,7 +64,7 @@ grep -v "^Build authentication form component$" .cerebro/.pending-todos > .cereb
 ## Reporting to the Team
 
 When your task is complete:
-1. Call `TaskUpdate` with `status: "completed"` and your name as `owner` on the assigned task
+1. Do **not** mark the task `completed`; Cyclops owns completion after independent verification.
 2. Call `SendMessage` to `cyclops-field` — include your full `TASK_RESULT` block in the message body. If `cyclops-field` is not on the team, send to `team-lead` instead.
 
 When you are blocked or need a decision: `SendMessage` to `cyclops-field` explaining the blocker. If `cyclops-field` is not on the team, send to `team-lead` instead.

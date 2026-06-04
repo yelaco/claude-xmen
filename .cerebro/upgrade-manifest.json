@@ -37,6 +37,11 @@
       "notes": "Team run manifest template — always synced from upstream"
     },
     {
+      "path": ".cerebro/scripts/*.py",
+      "ownership": "template",
+      "notes": "Reusable Cerebro validation and maintenance scripts — always synced from upstream"
+    },
+    {
       "path": ".cerebro/cerebro-identity.md",
       "ownership": "template",
       "notes": "Cerebro runtime identity and orchestration instructions — always synced from upstream; root CLAUDE.md imports this file"
@@ -84,7 +89,12 @@
     {
       "path": ".cerebro/.pending-todos",
       "ownership": "user",
-      "notes": "Active worker todos — never touched by upgrade"
+      "notes": "Legacy active worker todos — never touched by upgrade"
+    },
+    {
+      "path": ".cerebro/pending-todos/**",
+      "ownership": "user",
+      "notes": "Task-scoped active worker todos — never touched by upgrade"
     },
     {
       "path": ".cerebro/team-runs/**",

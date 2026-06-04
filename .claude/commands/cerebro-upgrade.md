@@ -4,7 +4,7 @@ Sync template-owned files from the upstream `claude-xmen` repo at a user-chosen 
 
 ## Instructions for Cerebro
 
-This is a **Cerebro-led single-flow operation**. Do NOT create an agent team. Do NOT touch `.cerebro/.pending-todos`. Do NOT spawn Wolverine or Storm. Handle everything directly, like `/cerebro-doctor`.
+This is a **Cerebro-led single-flow operation**. Do NOT create an agent team. Do NOT touch `.cerebro/.pending-todos` or `.cerebro/pending-todos/`. Do NOT spawn Wolverine or Storm. Handle everything directly, like `/cerebro-doctor`.
 
 Upstream remote: `https://github.com/yelaco/claude-xmen.git`
 
@@ -12,11 +12,12 @@ Upstream remote: `https://github.com/yelaco/claude-xmen.git`
 
 ### 1. Parse and Validate Arguments
 
-Parse `$ARGUMENTS` as: `[<ref>] [--dry-run] [--strict] [--only <glob>]`
+Parse `$ARGUMENTS` as: `[<ref>] [--dry-run] [--strict] [--force-dirty] [--only <glob>]`
 
 - `<ref>` — optional. A git tag or commit SHA (e.g. `v0.3.0`, `abc1234`). Must be explicit — no branch names, no `HEAD`, no `main`, no `master`. If omitted, the latest upstream tag is resolved automatically (see below).
 - `--dry-run` — produce the change report without writing any files.
 - `--strict` — pause Gate C before overwriting any template-owned file whose local content has drifted from the recorded baseline.
+- `--force-dirty` — allow writes even when Gate D finds uncommitted changes in owned paths; warn before continuing.
 - `--only <glob>` — restrict the upgrade to files matching this glob pattern.
 
 Abort immediately with a clear error if:
@@ -25,9 +26,8 @@ Abort immediately with a clear error if:
 **If `<ref>` is omitted**, resolve the latest upstream tag:
 
 ```bash
-git ls-remote --tags --sort=-version:refname \
-  https://github.com/yelaco/claude-xmen.git \
-  'refs/tags/v*' | head -1 | sed 's|.*refs/tags/||'
+test -f .cerebro/scripts/upgrade-latest-tag.py
+python3 .cerebro/scripts/upgrade-latest-tag.py --upstream https://github.com/yelaco/claude-xmen.git
 ```
 
 If the command fails or returns no tags, abort with:
@@ -67,9 +67,9 @@ If absent, run the bootstrap flow:
 - Write the confirmed manifest to `.cerebro/upgrade-manifest.json`.
 
 Canonical defaults:
-- **template** (overwrite silently): `.claude/agents/*.md`, `.claude/commands/cerebro-*.md`, `.claude/commands/to-me-my-x-men.md`, `.claude/hooks/*.sh`, `.cerebro/schemas/*.json`, `.cerebro/templates/*.md`, `.cerebro/templates/*.json`, `.cerebro/cerebro-identity.md`, `.claude/commands/cerebro-upgrade.md`
+- **template** (overwrite silently): `.claude/agents/*.md`, `.claude/commands/cerebro-*.md`, `.claude/commands/to-me-my-x-men.md`, `.claude/hooks/*.sh`, `.cerebro/schemas/*.json`, `.cerebro/templates/*.md`, `.cerebro/templates/*.json`, `.cerebro/scripts/*.py`, `.cerebro/cerebro-identity.md`, `.claude/commands/cerebro-upgrade.md`
 - **merge** (review conflicts, Gate A): `.claude/settings.json`, `.cerebro/docs/*.md`
-- **user** (never touched): `CLAUDE.md`, `README.md`, `.cerebro/plans/**`, `.cerebro/notepads/**`, `.cerebro/boulder.json`, `.cerebro/.pending-todos`, `.cerebro/team-runs/**`, `.cerebro/project-context.md`
+- **user** (never touched): `CLAUDE.md`, `README.md`, `.cerebro/plans/**`, `.cerebro/notepads/**`, `.cerebro/boulder.json`, `.cerebro/.pending-todos`, `.cerebro/pending-todos/**`, `.cerebro/team-runs/**`, `.cerebro/project-context.md`
 
 If the manifest is present, load it as-is. The local manifest's ownership entries are authoritative for this run.
 
@@ -80,14 +80,8 @@ If the manifest is present, load it as-is. The local manifest's ownership entrie
 Check if `.cerebro/upgrade-cache/<ref>/` already exists:
 
 ```bash
-if [ -d ".cerebro/upgrade-cache/<ref>" ]; then
-  git -C .cerebro/upgrade-cache/<ref> fetch --depth=1 origin tag <ref>
-  git -C .cerebro/upgrade-cache/<ref> checkout <ref>
-else
-  git clone --filter=blob:none --depth=1 --branch <ref> \
-    https://github.com/yelaco/claude-xmen.git \
-    .cerebro/upgrade-cache/<ref>/
-fi
+test -f .cerebro/scripts/fetch-upstream-ref.py
+python3 .cerebro/scripts/fetch-upstream-ref.py <ref> --upstream https://github.com/yelaco/claude-xmen.git
 ```
 
 If `git` is unavailable, abort with: `git is required for /cerebro-upgrade — install git and retry`.
@@ -98,25 +92,17 @@ If the ref does not exist upstream, abort with a clear error showing the ref and
 
 ### 5. Resolve `<ref>` to a Full SHA
 
-```bash
-git -C .cerebro/upgrade-cache/<ref> rev-parse HEAD
-```
-
-Store this SHA as `applied_sha` for the state file.
+Use the SHA printed by `.cerebro/scripts/fetch-upstream-ref.py` as `applied_sha` for the state file.
 
 ---
 
 ### 6. Load Baseline
 
-If `.cerebro/upgrade-state.json` exists, load its `hashes` map. These hashes represent the committed content of each file at the time of the last successful upgrade.
-
-Use committed-content hashes, not working-tree hashes:
-
-```bash
-git show HEAD:<path> | sha256sum
-```
+If `.cerebro/upgrade-state.json` exists, load its `hashes` map. These hashes represent the post-upgrade local file content from the last successful upgrade.
 
 If `.cerebro/upgrade-state.json` is absent (first run), treat every file as having no known baseline — all diffs are two-way comparisons between current local content and upstream content.
+
+For drift detection, compare the saved baseline hash to the current working-tree content hash for each local file. Use Python's `hashlib.sha256` so the workflow is portable across macOS and Linux.
 
 ---
 
@@ -229,12 +215,11 @@ In `--dry-run` mode, report the diff but do not prompt or write.
 
 ### 12. Write `.cerebro/upgrade-state.json` (Atomically)
 
-In live mode (not `--dry-run`), write the state file using a tempfile+rename for atomicity:
+In live mode (not `--dry-run`), write the state file through the atomic helper:
 
 ```bash
-tmp=$(mktemp .cerebro/upgrade-state.XXXXXX.json)
-# write JSON to $tmp
-mv "$tmp" .cerebro/upgrade-state.json
+test -f .cerebro/scripts/write-upgrade-state.py
+python3 .cerebro/scripts/write-upgrade-state.py --ref <ref> --sha <applied_sha>
 ```
 
 State file contents:
@@ -246,21 +231,22 @@ State file contents:
   "applied_sha": "<40-char hex SHA>",
   "applied_at": "<ISO-8601 timestamp>",
   "hashes": {
-    "<path>": "<sha256 hex of committed content after upgrade>"
+    "<path>": "<sha256 hex of post-upgrade local file content>"
   }
 }
 ```
 
-The `hashes` map must cover every `template`-owned and `merge`-owned file present in the local tree after the upgrade. Use committed-content hashes (`git show HEAD:<path> | sha256sum`) — not working-tree hashes.
+The `hashes` map must cover every `template`-owned and `merge`-owned file present in the local tree after the upgrade. Use working-tree content hashes after all writes and Gate A/Gate B resolutions are applied. Do not use `git show HEAD:<path>` here: newly written files may not exist in `HEAD`, and the user may not have committed the upgrade yet.
 
 In `--dry-run` mode, skip this step entirely.
 
 ---
 
-### 13. Ensure `.cerebro/upgrade-cache/` Is in `.gitignore`
+### 13. Ensure `.cerebro/upgrade-cache/` Is Ignored
 
 ```bash
-grep -qF '.cerebro/upgrade-cache/' .gitignore || echo '.cerebro/upgrade-cache/' >> .gitignore
+test -f .cerebro/scripts/ensure-upgrade-cache-gitignored.py
+python3 .cerebro/scripts/ensure-upgrade-cache-gitignored.py
 ```
 
 Run this in live mode even if `--dry-run` is set (it is a one-time idempotent safety measure).

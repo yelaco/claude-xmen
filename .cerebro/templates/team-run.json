@@ -4,54 +4,16 @@
   "command": "/to-me-my-x-men",
   "status": "planning",
   "lead": "cerebro",
-  "team_name": "",
-  "objective": "",
+  "team_name": "replace-with-team-name",
+  "objective": "replace with the user objective",
   "risk_level": "LOW",
   "started_at": "2026-05-22T00:00:00Z",
   "updated_at": "2026-05-22T00:00:00Z",
-  "teammates": [
-    {
-      "name": "cyclops-field",
-      "agent_type": "cyclops",
-      "status": "pending",
-      "responsibility": "",
-      "last_signal": ""
-    }
-  ],
-  "ownership": [
-    {
-      "path": "relative/path/to/file",
-      "owner": "wolverine-implementation",
-      "reviewer": "beast-review",
-      "notes": ""
-    }
-  ],
-  "mailbox_decisions": [
-    {
-      "at": "2026-05-22T00:00:00Z",
-      "from": "cyclops-field",
-      "to": ["wolverine-implementation", "storm-ui"],
-      "topic": "",
-      "decision": "",
-      "open": false
-    }
-  ],
-  "approvals": [
-    {
-      "gate": "",
-      "status": "pending",
-      "decided_at": null,
-      "notes": ""
-    }
-  ],
-  "verification": [
-    {
-      "command": "",
-      "status": "NOT RUN",
-      "by": "cerebro",
-      "notes": ""
-    }
-  ],
+  "teammates": [],
+  "ownership": [],
+  "mailbox_decisions": [],
+  "approvals": [],
+  "verification": [],
   "cleanup": {
     "team_stopped": false,
     "pending_todos_clear": false,

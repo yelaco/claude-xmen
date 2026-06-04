@@ -16,8 +16,18 @@ Copy the template into your project:
 
 ```bash
 # From your project root
-cp -r /path/to/claude-xmen/.claude .claude
-cp -r /path/to/claude-xmen/.cerebro .cerebro
+cp -R /path/to/claude-xmen/.claude .claude
+rsync -a \
+  --exclude 'boulder.json' \
+  --exclude '.pending-todos' \
+  --exclude 'pending-todos/' \
+  --exclude 'upgrade-state.json' \
+  --exclude 'upgrade-cache/' \
+  --exclude 'project-context.md' \
+  --exclude 'plans/*' \
+  --exclude 'notepads/*' \
+  --exclude 'team-runs/*' \
+  /path/to/claude-xmen/.cerebro/ .cerebro/
 cp /path/to/claude-xmen/CLAUDE.md CLAUDE.md
 ```
 
@@ -35,7 +45,7 @@ The template repo may include example runtime files (plans, team-runs) from its 
 /cerebro-reset
 ```
 
-This deletes all runtime state — plans, notepads, team-runs, boulder.json, and .pending-todos — and prompts for confirmation before touching anything. Config files, schemas, templates, and integrations are never touched.
+This deletes all runtime state — plans, notepads, team-runs, boulder.json, legacy .pending-todos, and task-scoped pending-todos/ files — and prompts for confirmation before touching anything. Config files, schemas, templates, and integrations are never touched.
 
 Then index your codebase and start working:
 
@@ -56,8 +66,8 @@ Then index your codebase and start working:
 | `/cerebro-start-work` | Execute the latest plan. Cerebro creates an execution team coordinated by Cyclops. |
 | `/cerebro-index` | Build `.cerebro/project-context.md` with an indexing team. |
 | `/cerebro-doctor` | Validate command names, native agent configuration, plan/state schemas, task result hooks, and stop hook health. |
-| `/cerebro-upgrade <ref>` | Sync template-owned files from the upstream repo at a tagged release. Presents diffs for merge-owned files; gates all writes. Supports `--dry-run`, `--strict`, and `--only <glob>`. |
-| `/cerebro-reset` | Wipe all Cerebro runtime state — plans, notepads, team-runs, boulder.json, and .pending-todos. Prompts for confirmation before deleting. Use after copying the template to get a clean slate, or to unstick a broken run. |
+| `/cerebro-upgrade <ref>` | Sync template-owned files from the upstream repo at a tagged release. Presents diffs for merge-owned files; gates all writes. Supports `--dry-run`, `--strict`, `--force-dirty`, and `--only <glob>`. |
+| `/cerebro-reset` | Wipe all Cerebro runtime state — plans, notepads, team-runs, boulder.json, legacy .pending-todos, and task-scoped pending-todos/. Prompts for confirmation before deleting. Use after copying the template to get a clean slate, or to unstick a broken run. |
 
 ---
 
@@ -121,7 +131,7 @@ After each delegated task, learnings are written to focused files under `.cerebr
 
 ### Todo Enforcement
 
-A stop hook blocks Claude from sending a final response while `.cerebro/.pending-todos` has content. Wolverine and Storm write todos at task start and remove them on completion. No silent abandonment.
+A stop hook blocks Claude from sending a final response while any task-scoped todo file under `.cerebro/pending-todos/` has content. The hook also honors legacy `.cerebro/.pending-todos` files from older runs. Wolverine and Storm write one todo file per assigned task and remove it on completion. No silent abandonment.
 
 ---
 
@@ -168,6 +178,19 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
     │   ├── team-run.schema.json       # Agent team run manifest schema
     │   ├── upgrade-manifest.schema.json  # Upgrade manifest schema
     │   └── upgrade-state.schema.json  # Upgrade state baseline schema
+    ├── scripts/
+    │   ├── check-agent-teams-enabled.py  # Doctor validation for team env
+    │   ├── ensure-upgrade-cache-gitignored.py # Upgrade cache ignore helper
+    │   ├── fetch-upstream-ref.py         # Upgrade fetch/cache helper
+    │   ├── reset-runtime.py              # Reset scan/delete/verify helper
+    │   ├── setup-status.py               # Setup wiring and version helper
+    │   ├── test-stop-hook.py             # Doctor test for Stop hook blocking
+    │   ├── upgrade-latest-tag.py         # Upgrade latest-tag resolver
+    │   ├── validate-agent-frontmatter.py # Doctor validation for native agents
+    │   ├── validate-boulder.py           # Doctor validation for execution state
+    │   ├── validate-team-runs.py         # Doctor validation for team-run manifests
+    │   ├── validate-upgrade-metadata.py  # Doctor validation for upgrade metadata
+    │   └── write-upgrade-state.py        # Atomic upgrade-state writer
     ├── templates/
     │   ├── plan.md                    # Canonical Professor X plan schema
     │   ├── project-context.md         # Canonical repository index schema
@@ -177,6 +200,7 @@ A stop hook blocks Claude from sending a final response while `.cerebro/.pending
     ├── plans/                         # Plans written by Cerebro from Professor X drafts
     ├── notepads/                      # Per-plan wisdom (learnings, decisions)
     ├── team-runs/                     # Per-team coordination audit logs
+    ├── pending-todos/                 # Task-scoped worker todos (gitignored)
     ├── upgrade-cache/                 # Shallow upstream clones (gitignored)
     └── boulder.json                   # Execution state (created at /cerebro-start-work)
 ```

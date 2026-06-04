@@ -35,11 +35,23 @@ flowchart TB
 | Path | Owner | Purpose |
 |---|---|---|
 | `.cerebro/schemas/boulder.schema.json` | Cyclops | Required shape for resumable execution state. |
+| `.cerebro/scripts/check-agent-teams-enabled.py` | Cerebro | Reusable doctor check for Claude Code agent-team environment settings. |
+| `.cerebro/scripts/ensure-upgrade-cache-gitignored.py` | Cerebro | Reusable helper that keeps `.cerebro/upgrade-cache/` ignored. |
+| `.cerebro/scripts/fetch-upstream-ref.py` | Cerebro | Reusable helper that fetches an upstream upgrade ref and prints its SHA. |
+| `.cerebro/scripts/reset-runtime.py` | Cerebro | Reusable scan/reset/verify helper for `/cerebro-reset`. |
+| `.cerebro/scripts/setup-status.py` | Cerebro | Reusable wiring and version helper for `/cerebro-setup`. |
+| `.cerebro/scripts/test-stop-hook.py` | Cerebro | Reusable doctor check for Stop hook blocking behavior. |
+| `.cerebro/scripts/upgrade-latest-tag.py` | Cerebro | Reusable helper that resolves the latest upstream version tag. |
+| `.cerebro/scripts/validate-agent-frontmatter.py` | Cerebro | Reusable doctor check for native agent frontmatter. |
+| `.cerebro/scripts/validate-boulder.py` | Cerebro | Reusable doctor check for `.cerebro/boulder.json`. |
+| `.cerebro/scripts/validate-team-runs.py` | Cerebro | Reusable doctor check for the team-run template and manifests. |
+| `.cerebro/scripts/validate-upgrade-metadata.py` | Cerebro | Reusable doctor check for upgrade manifest and upgrade state metadata. |
+| `.cerebro/scripts/write-upgrade-state.py` | Cerebro | Reusable helper that atomically writes upgrade baseline hashes. |
 | `.cerebro/templates/plan.md` | Professor X | Canonical plan schema. |
 | `.cerebro/templates/project-context.md` | Cerebro | Canonical repository index schema. |
 | `.cerebro/project-context.md` | Cerebro | Indexed stack, commands, conventions, entrypoints, and risks. |
 | `.cerebro/plans/*.md` | Professor X | Approved implementation plans. |
-| `.cerebro/boulder.json` | Cyclops | Active plan, completed tasks, remaining tasks, approval state. |
+| `.cerebro/boulder.json` | Cerebro | Business-level execution checkpoint: active plan, overall status, approvals, verification history, and decisions. Task progress lives in the native TaskList. |
 | `.cerebro/notepads/{plan}/conventions.md` | Cyclops | Coding patterns, naming, file structure, UI patterns. |
 | `.cerebro/notepads/{plan}/commands.md` | Cyclops | Useful install/test/lint/build/dev commands. |
 | `.cerebro/notepads/{plan}/decisions.md` | Cyclops | Approval decisions and architectural decisions. |
@@ -47,7 +59,8 @@ flowchart TB
 | `.cerebro/notepads/{plan}/failures.md` | Cyclops | Failed approaches and why. |
 | `.cerebro/notepads/{plan}/verification.md` | Cyclops | Verification commands and outcomes. |
 | `.cerebro/notepads/{plan}/issues.md` | Cyclops | Blockers, deferred work, unresolved risks. |
-| `.cerebro/.pending-todos` | Wolverine / Storm | Active worker todos enforced by the stop hook. |
+| `.cerebro/pending-todos/{team}/{agent}/{task-id}.txt` | Wolverine / Storm | Task-scoped worker todos enforced by the stop hook. |
+| `.cerebro/.pending-todos` | Wolverine / Storm | Legacy worker todo file still honored by the stop hook for old runs. |
 | `.cerebro/upgrade-manifest.json` | Cerebro | Declares file ownership for `/cerebro-upgrade`. Controls which files are overwritten, merged, or left untouched. |
 | `.cerebro/upgrade-state.json` | Cerebro | Baseline hashes written after each successful upgrade. Drives change detection on the next run. |
 | `.cerebro/upgrade-cache/<ref>/` | Cerebro | Shallow clones of upstream refs (gitignored). |
@@ -67,7 +80,7 @@ flowchart TB
 5. **Apply** — template-owned files are written silently; merge-owned conflicts trigger Gate A.
 6. **Report** — a change table is printed to chat and written to `.cerebro/upgrade-cache/<ref>/report.md`.
 7. **Gate B** — if the upstream manifest differs from the local manifest, the user chooses how to reconcile.
-8. **State write** — `.cerebro/upgrade-state.json` is written atomically (tempfile+rename) with the applied SHA and file hashes.
+8. **State write** — `.cerebro/upgrade-state.json` is written atomically (tempfile+rename) with the applied SHA and post-upgrade working-tree file hashes.
 
 ### Approval Gates
 
@@ -82,6 +95,7 @@ flowchart TB
 
 - `--dry-run` — show the change report without writing anything.
 - `--strict` — pause Gate C before overwriting any template-owned file that has drifted locally.
+- `--force-dirty` — continue after Gate D finds uncommitted changes in owned paths.
 - `--only <glob>` — restrict the upgrade to files matching this glob.
 
 ### v1 Known Gaps

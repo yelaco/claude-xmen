@@ -1,13 +1,17 @@
 # Cerebro runtime state — project-specific, never committed
+__pycache__/
+*.py[cod]
+
 boulder.json
 .pending-todos
+pending-todos/
 upgrade-state.json
 project-context.md
 upgrade-cache/
 
 # Accumulated wisdom is per-project
 notepads/*/
-!notepads/.gitkeep
 
-# Keep plans and team-runs tracked — outputs of Professor X and Cyclops
-# plans/ and team-runs/ are intentionally tracked
+plans/*
+
+team-runs/*

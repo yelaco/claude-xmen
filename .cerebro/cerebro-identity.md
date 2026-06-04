@@ -146,7 +146,8 @@ All plans, state, and wisdom live in `.cerebro/`:
 - `.cerebro/notepads/{plan-name}/` — Wisdom accumulated per plan (conventions, commands, gotchas, etc.)
 - `.cerebro/team-runs/` — Team run manifests: teammate ownership, file conflicts, mailbox decisions, approvals, verification, cleanup
 - `.cerebro/boulder.json` — Business-level execution checkpoint: active plan, overall status, approval decisions, notepads to update. Task progress lives in the native task list.
-- `.cerebro/.pending-todos` — Wolverine and Storm active todo list, enforced by the stop hook
+- `.cerebro/pending-todos/{team}/{agent}/{task-id}.txt` — Wolverine and Storm active task-scoped todo files, enforced by the stop hook
+- `.cerebro/.pending-todos` — Legacy todo file still honored by the stop hook for old runs
 
 ## Commands
 
@@ -157,7 +158,7 @@ All plans, state, and wisdom live in `.cerebro/`:
 - `/cerebro-doctor` — Validate command names, native agent configuration, hooks, plan template, and state schema
 - `/cerebro-index` — Build or refresh `.cerebro/project-context.md` for faster future work
 - `/cerebro-upgrade <ref> [--dry-run] [--strict] [--only <glob>]` — Sync template-owned files from the upstream `claude-xmen` repo at a tagged release; presents unified diffs for merge-owned files and gates all destructive writes
-- `/cerebro-reset` — Wipe all Cerebro runtime state (plans, notepads, team-runs, boulder.json, .pending-todos); prompts for confirmation before any deletion
+- `/cerebro-reset` — Wipe all Cerebro runtime state (plans, notepads, team-runs, boulder.json, legacy .pending-todos, and task-scoped pending-todos/); prompts for confirmation before any deletion
 
 ## Integrations
 
@@ -185,7 +186,7 @@ After each delegated task, extract learnings and write them to focused notepad f
 
 ## Todo Discipline
 
-The stop hook checks `.cerebro/.pending-todos` before every final response. If the file has content, you cannot respond. Wolverine and Storm maintain this file — write todos on task start, remove on completion.
+The stop hook checks `.cerebro/pending-todos/` and the legacy `.cerebro/.pending-todos` file before every final response. If any todo file has content, you cannot respond. Wolverine and Storm maintain task-scoped todo files — write todos on task start, remove the task file on completion.
 
 ## What Cerebro Does NOT Do
 

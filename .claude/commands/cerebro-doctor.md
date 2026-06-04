@@ -43,56 +43,8 @@ Expected: no matches, except archival docs only if intentionally retained and cl
 ### 3. Native Agent Frontmatter
 
 ```bash
-python3 - <<'PY'
-from pathlib import Path
-
-required_agents = {
-    "professor-x", "beast", "emma-frost", "cyclops", "wolverine",
-    "forge", "nightcrawler", "sage", "storm",
-}
-valid_efforts = {"low", "medium", "high", "xhigh", "max"}
-required_keys = {"name", "description", "model", "effort", "tools"}
-failed = []
-seen = set()
-
-for path in sorted(Path(".claude/agents").glob("*.md")):
-    text = path.read_text()
-    if not text.startswith("---\n"):
-        failed.append((str(path), "missing frontmatter"))
-        continue
-    end = text.find("\n---\n", 4)
-    if end == -1:
-        failed.append((str(path), "unterminated frontmatter"))
-        continue
-    frontmatter = {}
-    for line in text[4:end].splitlines():
-        if ":" in line:
-            key, value = line.split(":", 1)
-            frontmatter[key.strip()] = value.strip()
-    missing = sorted(required_keys - set(frontmatter))
-    if missing:
-        failed.append((str(path), f"missing {missing}"))
-        continue
-    name = frontmatter["name"]
-    seen.add(name)
-    if name not in required_agents:
-        failed.append((str(path), f"unexpected agent {name}"))
-    if frontmatter["effort"] not in valid_efforts:
-        failed.append((str(path), f"invalid effort {frontmatter['effort']}"))
-    tools = {tool.strip() for tool in frontmatter["tools"].split(",")}
-    if "Agent" in tools:
-        failed.append((str(path), "Agent tool must not be allowed in subagents"))
-
-missing_agents = sorted(required_agents - seen)
-if missing_agents:
-    failed.append((".claude/agents", f"missing agents {missing_agents}"))
-
-if failed:
-    for item in failed:
-        print(item)
-    raise SystemExit(1)
-print("native agent frontmatter ok")
-PY
+test -f .cerebro/scripts/validate-agent-frontmatter.py
+python3 .cerebro/scripts/validate-agent-frontmatter.py
 ```
 
 ### 4. Native Orchestration Compatibility
@@ -175,32 +127,11 @@ python3 -m json.tool .cerebro/schemas/boulder.schema.json > /dev/null
 
 Expected: valid JSON schema file exists.
 
-If `.cerebro/boulder.json` exists, validate required top-level fields:
+If `.cerebro/boulder.json` exists, validate it against the schema contract:
 
 ```bash
-python3 - <<'PY'
-import json
-from pathlib import Path
-state_path = Path(".cerebro/boulder.json")
-schema_path = Path(".cerebro/schemas/boulder.schema.json")
-if not schema_path.exists():
-    print("missing schema")
-    raise SystemExit(1)
-if not state_path.exists():
-    print("no active boulder state")
-    raise SystemExit(0)
-state = json.loads(state_path.read_text())
-required = {
-    "version", "active_plan", "plan_name", "status", "risk_level",
-    "team_name", "started_at", "updated_at",
-    "approval_gates", "verification_history", "decisions",
-}
-missing = sorted(required - set(state))
-if missing:
-    print({"missing": missing})
-    raise SystemExit(1)
-print("boulder state fields ok")
-PY
+test -f .cerebro/scripts/validate-boulder.py
+python3 .cerebro/scripts/validate-boulder.py
 ```
 
 ### 9. Team Run Schema
@@ -211,6 +142,8 @@ test -f .cerebro/templates/team-run.json
 test -f .cerebro/schemas/team-run.schema.json
 python3 -m json.tool .cerebro/templates/team-run.json > /dev/null
 python3 -m json.tool .cerebro/schemas/team-run.schema.json > /dev/null
+test -f .cerebro/scripts/validate-team-runs.py
+python3 .cerebro/scripts/validate-team-runs.py
 rg -n "team-runs|team-run.schema.json|Team Run Manifest|TEAM_RUN_PATCH" .cerebro/cerebro-identity.md README.md .claude/commands .claude/agents/cyclops.md .cerebro/docs .cerebro/project-context.md
 ```
 
@@ -231,16 +164,8 @@ Expected: valid settings JSON, executable hooks, worker result enforcement, stop
 ### 11. Agent Team Configuration
 
 ```bash
-python3 - <<'PY'
-import json
-from pathlib import Path
-settings = json.loads(Path(".claude/settings.json").read_text())
-env = settings.get("env", {})
-if env.get("CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS") != "1":
-    print("missing CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1")
-    raise SystemExit(1)
-print("agent teams enabled")
-PY
+test -f .cerebro/scripts/check-agent-teams-enabled.py
+python3 .cerebro/scripts/check-agent-teams-enabled.py
 rg -n "agent team|teammate|team mailbox|shared task list|NO NESTED TEAMS|CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS" .cerebro/cerebro-identity.md README.md .claude/commands .claude/agents/cyclops.md .cerebro/docs
 ```
 
@@ -257,13 +182,8 @@ Expected: exit code `0` when no pending todos exist.
 For block behavior, use a temporary backup and restore it:
 
 ```bash
-tmp="$(mktemp)"
-if [ -f .cerebro/.pending-todos ]; then cp .cerebro/.pending-todos "$tmp"; else : > "$tmp"; fi
-printf "doctor temporary todo\n" > .cerebro/.pending-todos
-hook_output=$(bash .claude/hooks/check-pending-todos.sh)
-if [ -s "$tmp" ]; then cp "$tmp" .cerebro/.pending-todos; else rm -f .cerebro/.pending-todos; fi
-rm -f "$tmp"
-echo "$hook_output" | grep -q '"decision": "block"' && echo "block decision ok"
+test -f .cerebro/scripts/test-stop-hook.py
+python3 .cerebro/scripts/test-stop-hook.py
 ```
 
 Expected: hook exits `0` and outputs `{"decision": "block", ...}` while the temporary todo exists (Claude Code hooks signal blocking via JSON stdout, not exit code).
@@ -271,95 +191,18 @@ Expected: hook exits `0` and outputs `{"decision": "block", ...}` while the temp
 ### 13. TASK_RESULT Hook Behavior
 
 ```bash
-printf '{"hook_event_name":"SubagentStop","agent_type":"wolverine","last_assistant_message":"done"}' | bash .claude/hooks/check-task-result-envelope.sh | rg '"decision": "block"'
-printf '{"hook_event_name":"SubagentStop","agent_type":"wolverine","last_assistant_message":"TASK_RESULT:\nSTATUS: PASS\nTESTS RUN:\n- None\nVERIFICATION:\n- None"}' | bash .claude/hooks/check-task-result-envelope.sh | test ! -s /dev/stdin
+bash .claude/hooks/test-task-result-envelope.sh
 ```
 
 Expected: malformed result blocks; valid result allows stopping.
 
 ### 14. Upgrade Manifest and State
 
-Check for the upgrade manifest. If absent, this is informational only — not a blocking failure. Existing projects that have not yet run `/cerebro-upgrade` will not have this file.
+Validate upgrade schemas, manifest entry structure, and upgrade state metadata. If `.cerebro/upgrade-manifest.json` or `.cerebro/upgrade-state.json` is absent, that is informational only — existing projects may not have them until `/cerebro-upgrade` has run.
 
 ```bash
-if [ ! -f .cerebro/upgrade-manifest.json ]; then
-  echo "no manifest present (informational — run /cerebro-upgrade to initialize)"
-else
-  python3 -m json.tool .cerebro/upgrade-manifest.json > /dev/null && echo "upgrade-manifest.json valid"
-fi
+test -f .cerebro/scripts/validate-upgrade-metadata.py
+python3 .cerebro/scripts/validate-upgrade-metadata.py
 ```
 
-Check for the upgrade manifest schema:
-
-```bash
-test -f .cerebro/schemas/upgrade-manifest.schema.json && python3 -m json.tool .cerebro/schemas/upgrade-manifest.schema.json > /dev/null && echo "upgrade-manifest.schema.json valid"
-```
-
-Check for the upgrade state schema:
-
-```bash
-test -f .cerebro/schemas/upgrade-state.schema.json && python3 -m json.tool .cerebro/schemas/upgrade-state.schema.json > /dev/null && echo "upgrade-state.schema.json valid"
-```
-
-Validate manifest entry structure (if manifest is present):
-
-```bash
-python3 - <<'PY'
-from pathlib import Path
-import json
-manifest_path = Path(".cerebro/upgrade-manifest.json")
-if not manifest_path.exists():
-    print("no manifest present (informational)")
-    raise SystemExit(0)
-manifest = json.loads(manifest_path.read_text())
-valid_ownerships = {"template", "merge", "user"}
-failed = []
-entries = manifest.get("entries", [])
-if not isinstance(entries, list) or len(entries) == 0:
-    failed.append("entries must be a non-empty array")
-for i, entry in enumerate(entries):
-    if "path" not in entry:
-        failed.append(f"entry {i}: missing 'path'")
-    if "ownership" not in entry:
-        failed.append(f"entry {i}: missing 'ownership'")
-    elif entry["ownership"] not in valid_ownerships:
-        failed.append(f"entry {i}: invalid ownership '{entry['ownership']}' (must be template, merge, or user)")
-if failed:
-    for f in failed:
-        print(f)
-    raise SystemExit(1)
-print(f"manifest entries ok ({len(entries)} entries)")
-PY
-```
-
-If `.cerebro/upgrade-state.json` exists, validate required fields:
-
-```bash
-python3 - <<'PY'
-import json, re
-from pathlib import Path
-state_path = Path(".cerebro/upgrade-state.json")
-if not state_path.exists():
-    print("no upgrade-state.json present (informational — will be written after first /cerebro-upgrade)")
-    raise SystemExit(0)
-state = json.loads(state_path.read_text())
-required = {"version", "applied_ref", "applied_sha", "applied_at", "hashes"}
-missing = sorted(required - set(state))
-if missing:
-    print(f"upgrade-state.json missing fields: {missing}")
-    raise SystemExit(1)
-if state.get("version") != 1:
-    print(f"unexpected version: {state.get('version')}")
-    raise SystemExit(1)
-sha = state.get("applied_sha", "")
-if not re.match(r"^[0-9a-f]{40}$", sha):
-    print(f"applied_sha is not a 40-char hex: {sha!r}")
-    raise SystemExit(1)
-if not isinstance(state.get("hashes"), dict):
-    print("hashes must be an object")
-    raise SystemExit(1)
-print(f"upgrade-state.json valid (ref={state['applied_ref']}, sha={sha[:8]}...)")
-PY
-```
-
-Expected: manifest and schemas parse as valid JSON, entries have required keys and valid ownership enum, and upgrade-state.json (if present) has all required fields. If upgrade-manifest.json is absent, section 14 exits zero with an informational message.
+Expected: schemas parse as valid JSON, manifest entries have required keys and valid ownership enum, and upgrade-state.json (if present) has all required fields. If upgrade-manifest.json is absent, section 14 exits zero with an informational message.
