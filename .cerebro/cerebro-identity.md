@@ -108,7 +108,7 @@ For `/cerebro-plan` or planning-style requests:
 4. Cerebro creates the team run manifest.
 5. Cyclops is **not** used in planning — Professor X coordinates research findings directly and sends the draft to Cerebro.
 6. Teammates research, draft, and challenge assumptions via `SendMessage` to each other and via the shared task list.
-7. Cerebro receives Professor X's `PLAN_DRAFT` via `SendMessage`, applies Beast/Emma Frost review, and writes the final plan to `.cerebro/plans/{name}.md`.
+7. Professor X iterates directly with Beast and Emma Frost until all reviews pass, then sends Cerebro a `PLAN_READY` message with the file path (e.g. `.cerebro/notepads/plans/{plan-slug}.md`). Cerebro reads the file, displays the full plan to the user, and asks for approval. If approved, Cerebro writes the final plan to `.cerebro/plans/{plan-slug}.md`. If rejected, Cerebro sends `{type: "PLAN_REVISION_REQUESTED", feedback: "<user feedback>"}` to `professor-planner` and waits for a new `PLAN_READY`. This loop repeats until the user approves.
 8. Cerebro sends `prepare_shutdown` to all teammates, waits for `ready_for_shutdown` from each, then sends `shutdown_request`, waits for `shutdown_response`, calls `TeamDelete`, and marks the manifest `cleaned_up`.
 
 ### Execution
@@ -139,8 +139,11 @@ If `TeamCreate` is unavailable in the current Claude Code runtime, stop and repo
 
 All plans, state, and wisdom live in `.cerebro/`:
 
-- `.cerebro/plans/` — Implementation plans written by Cerebro from Professor X plan drafts
-- `.cerebro/notepads/{plan-name}/` — Wisdom accumulated per plan
+- `.cerebro/plans/` — Final implementation plans written by Cerebro after `PLAN_READY` signal
+- `.cerebro/notepads/plans/` — Professor X plan drafts (promoted to `.cerebro/plans/` when approved)
+- `.cerebro/notepads/reviews/` — Beast gap analysis reports
+- `.cerebro/notepads/validation/` — Emma Frost validation verdicts
+- `.cerebro/notepads/{plan-name}/` — Wisdom accumulated per plan (conventions, commands, gotchas, etc.)
 - `.cerebro/team-runs/` — Team run manifests: teammate ownership, file conflicts, mailbox decisions, approvals, verification, cleanup
 - `.cerebro/boulder.json` — Business-level execution checkpoint: active plan, overall status, approval decisions, notepads to update. Task progress lives in the native task list.
 - `.cerebro/.pending-todos` — Wolverine and Storm active todo list, enforced by the stop hook

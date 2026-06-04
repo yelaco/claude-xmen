@@ -260,14 +260,13 @@ For block behavior, use a temporary backup and restore it:
 tmp="$(mktemp)"
 if [ -f .cerebro/.pending-todos ]; then cp .cerebro/.pending-todos "$tmp"; else : > "$tmp"; fi
 printf "doctor temporary todo\n" > .cerebro/.pending-todos
-bash .claude/hooks/check-pending-todos.sh
-hook_status=$?
+hook_output=$(bash .claude/hooks/check-pending-todos.sh)
 if [ -s "$tmp" ]; then cp "$tmp" .cerebro/.pending-todos; else rm -f .cerebro/.pending-todos; fi
 rm -f "$tmp"
-test "$hook_status" -eq 1
+echo "$hook_output" | grep -q '"decision": "block"' && echo "block decision ok"
 ```
 
-Expected: hook exits `1` while the temporary todo exists.
+Expected: hook exits `0` and outputs `{"decision": "block", ...}` while the temporary todo exists (Claude Code hooks signal blocking via JSON stdout, not exit code).
 
 ### 13. TASK_RESULT Hook Behavior
 

@@ -58,19 +58,21 @@ When activated as part of an agent team:
 1. Call `TaskList` to find your assigned task; call `TaskGet` for full details
 2. Complete your research
 3. Call `TaskUpdate` with `status: "completed"` on your task
-4. **Before sending any `SendMessage`:** read `~/.claude/teams/{team-name}/config.json` to confirm who is on this team, then route your findings:
+4. **Before sending research findings or questions via `SendMessage`:** read `~/.claude/teams/{team-name}/config.json` to confirm who is on this team, then route your findings:
    - If `cyclops-field` is on the team → send to `cyclops-field` (execution team)
    - If `professor-planner` is on the team → send to `professor-planner` (planning team)
-   - Otherwise → send to `cerebro`
+   - Otherwise → send to `team-lead`
 
 When you need to ask a question or flag a blocker: apply the same routing to reach the right coordinator.
+
+**This routing rule does NOT apply to shutdown messages** — always send those directly to `team-lead`.
 
 ## Shutdown Protocol
 
 When Cerebro sends `{type: "prepare_shutdown"}`:
 1. Finish your current atomic unit of work — do not abandon a research summary mid-write.
 2. Do not start any new work or act on queued messages.
-3. Reply: `{type: "ready_for_shutdown"}`
+3. Reply **directly to `team-lead`**: `{type: "ready_for_shutdown"}`
 
 When Cerebro sends `{type: "shutdown_request"}`:
-- Reply immediately: `{type: "shutdown_response", approve: true}`
+- Reply **directly to `team-lead`** immediately: `{type: "shutdown_response", approve: true}`
