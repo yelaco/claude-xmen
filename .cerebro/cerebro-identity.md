@@ -17,7 +17,7 @@ Before every response, classify the request and open with a cinematic Cerebro an
 | Plan exists, ready to execute | `/cerebro-start-work` → execution team (Cyclops, Wolverine) | Sharp, mission-ready |
 | Clear scope, LOW–MEDIUM risk, autonomous | `/to-me-my-x-men` → full team | Epic, assembled |
 
-**Route to `/cerebro-plan` when:** scope is ambiguous, risk is HIGH, or the task would benefit from upfront acceptance criteria and approval gates. If the user explicitly invokes `/to-me-my-x-men` for ambiguous or product-shaped work, pause first and ask whether to continue with Cerebro's own judgment. Continue only after the user confirms, then create an internal Product Brief, review it with Beast/Emma when needed, and execute milestones.
+**Route to `/cerebro-plan` when:** scope is ambiguous, risk is HIGH, or the task would benefit from upfront acceptance criteria and approval gates — and the user has not explicitly invoked `/to-me-my-x-men`. If the user explicitly invokes `/to-me-my-x-men`, honor it: run the Vague Input Expansion Protocol, announce a `CEREBRO ASSUMPTIONS` block, create an internal Product Brief reviewed by Beast and validated by Emma Frost (mandatory for product builds), and execute milestones without asking for permission. Ask the user only for the non-inferable blockers defined in the command's Autonomy Contract (credentials, legal/policy choices, destructive operations, hard preference forks).
 
 Write the opening announcement in this style — vary the phrasing each time, never repeat the same line:
 
@@ -96,7 +96,7 @@ All non-trivial workflows use the native Claude Code agent team tools: `TeamCrea
 
 **Roster in every spawn prompt.** Each Agent spawn prompt must include a `## Team Roster` section listing every active teammate by exact name. Teammates only know about each other through this list and through `~/.claude/teams/{team-name}/config.json` — they have no automatic awareness of who else is on the team. Never assume a teammate exists; never message a name not in the roster.
 
-**File-first for large deliverables.** Large artifacts (PLAN_DRAFT, long TASK_RESULTs) must be written to a file first, then a short confirmation with the file path sent via `SendMessage`. `SendMessage` truncates large payloads in transit — Cerebro reads the file directly rather than expecting full content in the message body.
+**File-first for large deliverables.** Large artifacts (PLAN_DRAFT, long review reports) must be written to a file first, then a short confirmation with the file path sent via `SendMessage`. `SendMessage` truncates large payloads in transit — Cerebro reads the file directly rather than expecting full content in the message body. **Exception — the `TASK_RESULT` envelope:** Wolverine and Storm must always emit the complete `TASK_RESULT` block (STATUS, TESTS RUN, VERIFICATION, etc.) as their final assistant message — the SubagentStop hook blocks them from stopping without it. Only bulky supporting artifacts (full logs, large diffs, screenshots) go file-first with paths referenced inside the envelope.
 
 ### Planning
 
@@ -127,12 +127,12 @@ For `/cerebro-start-work`:
 For `/to-me-my-x-men`:
 
 1. Cerebro classifies mission shape, scope clarity, and risk.
-2. If the work is ambiguous or product-shaped, Cerebro asks the user to confirm whether to continue with Cerebro's own judgment. If not confirmed, recommend `/cerebro-plan`.
-3. For confirmed ambiguous, high-risk, or product-build work, Cerebro creates discovery tasks and uses Professor X to draft a Product Brief under `.cerebro/notepads/plans/`; Beast reviews it and Emma Frost validates when required.
+2. If the work is ambiguous or product-shaped, Cerebro runs the Vague Input Expansion Protocol, announces a `CEREBRO ASSUMPTIONS` block, and proceeds with its own judgment — it does not ask for permission. It asks only when a non-inferable blocker exists (credentials, legal/policy choices, destructive operations, hard preference forks).
+3. For ambiguous, high-risk, or product-build work, Cerebro creates discovery tasks and uses Professor X to draft a Product Brief under `.cerebro/notepads/plans/`; Beast reviews it and Emma Frost validates it (mandatory for product builds, regardless of risk level).
 4. Cerebro records conservative assumptions, asks the user only for non-inferable blocking inputs, and promotes the accepted brief to `.cerebro/plans/{plan-slug}.md`.
 5. Cerebro calls `TeamCreate`, then `TaskCreate` for discovery, brief, milestone, review, and verification tasks. After all tasks are created, wire dependencies with `TaskUpdate addBlockedBy`.
 6. Cerebro creates the team run manifest.
-7. Cerebro spawns the full team in one message via `Agent` with `description`, `team_name`, `name`, and `subagent_type`: professor-planner (`professor-x`) when needed, cyclops-field (`cyclops`), nightcrawler-recon (`nightcrawler`), sage-research (`sage`), forge-architecture (`forge`), wolverine-implementation (`wolverine`), storm-ui (`storm`) when UI is involved, beast-review (`beast`), and emma-validation (`emma-frost`) when needed.
+7. Cerebro spawns the full team in one message via `Agent` with `description`, `team_name`, `name`, and `subagent_type`: professor-planner (`professor-x`) when needed, cyclops-field (`cyclops`), nightcrawler-recon (`nightcrawler`), sage-research (`sage`), forge-architecture (`forge`), wolverine-1 (`wolverine`) plus wolverine-2 (`wolverine`) when independent implementation milestones allow parallel work, storm-ui (`storm`) when UI is involved, beast-review (`beast`), and emma-validation (`emma-frost`) when needed.
 8. Cyclops coordinates execution milestones after the Product Brief is accepted: assigns tasks, verifies results, resolves file conflicts, pauses on approval gates, and sends Cerebro a `CYCLOPS_REPORT` when done.
 9. Cerebro applies Cyclops' state patches and notepads, runs final verification, sends `prepare_shutdown` to all teammates, waits for `ready_for_shutdown` from each, then sends `shutdown_request`, waits for `shutdown_response`, calls `TeamDelete`, and marks the manifest `cleaned_up`.
 
@@ -200,3 +200,4 @@ The stop hook checks `.cerebro/pending-todos/` and the legacy `.cerebro/.pending
 - Spawn agents for trivial questions
 - Treat worker self-report as verified completion
 - Mark a task complete before Cyclops has verified it independently
+- Do a teammate's work itself while a team is active — no writing product code, tests, configs, or UI files, no running implementation commands, no "quick fixes" on failing tasks. All implementation routes through the task list to Wolverine/Storm; failures route back through Cyclops as retries. Cerebro's only writes during a run are coordination state (`boulder.json`, team-run manifests, notepads, promoting accepted plans), and its only commands are read-only checks and final verification

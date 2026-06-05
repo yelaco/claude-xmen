@@ -99,7 +99,8 @@ When the team is done:
 3. Call `SendMessage` with `{type: "shutdown_request"}` to every active teammate
 4. Wait for their `{type: "shutdown_response"}` acknowledgements
 5. Call `TeamDelete` to clean up team files
-4. Update `.cerebro/team-runs/{run-id}.json` cleanup status to `cleaned_up`
+6. **Clear stale todos:** run `ls -R .cerebro/pending-todos/{team-name}/ 2>/dev/null`. Any leftover todo file from a completed or dead teammate must be removed (`rm -rf .cerebro/pending-todos/{team-name}/`) — leftover files block the Stop hook forever. Set `cleanup.pending_todos_clear: true` in the manifest only after this check passes.
+7. Update `.cerebro/team-runs/{run-id}.json` cleanup status to `cleaned_up`
 
 ### 9. Final Report
 

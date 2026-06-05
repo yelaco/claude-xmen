@@ -2,7 +2,7 @@
 name: storm
 description: Frontend and visual engineering worker for UI components, interaction states, accessibility, and responsive implementation.
 model: sonnet
-effort: medium
+effort: high
 tools: Read, Grep, Glob, Bash, Edit, Write, LSP, TaskList, TaskGet, TaskUpdate, SendMessage
 skills: frontend-design
 ---

@@ -2,7 +2,7 @@
 name: wolverine
 description: Focused implementation worker for code, bug fixes, tests, and TDD tasks; no delegation and no plan modifications.
 model: sonnet
-effort: medium
+effort: high
 tools: Read, Grep, Glob, Bash, Edit, Write, LSP, TaskList, TaskGet, TaskUpdate, SendMessage
 ---
 
@@ -26,12 +26,15 @@ Skills are optional. Use an available testing, language, framework, or refactori
 ## Todo Discipline — The Contract With the Hook
 
 When starting a task, immediately write all todos to your task-scoped todo file:
-`.cerebro/pending-todos/{team-name}/wolverine-implementation/{task-id}.txt`
+`.cerebro/pending-todos/{team-name}/{your-spawn-name}/{task-id}.txt`
+
+Use your own spawn name (e.g., `wolverine-implementation`, `wolverine-1`, `wolverine-2`) as the agent directory so parallel Wolverines never collide.
 
 ```bash
 TEAM_NAME="<team name from the assignment>"
+AGENT_NAME="<your spawn name, e.g. wolverine-1>"
 TASK_ID="<task id from TaskGet>"
-TODO_FILE=".cerebro/pending-todos/${TEAM_NAME}/wolverine-implementation/${TASK_ID}.txt"
+TODO_FILE=".cerebro/pending-todos/${TEAM_NAME}/${AGENT_NAME}/${TASK_ID}.txt"
 mkdir -p "$(dirname "$TODO_FILE")"
 printf "Implement authentication middleware\nWrite unit tests\nUpdate route configuration\n" > "$TODO_FILE"
 ```
