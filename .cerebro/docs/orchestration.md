@@ -12,6 +12,8 @@ Cerebro turns Claude Code into a coordinated agent workflow using native project
 | Complex or risky | `/cerebro-plan [task]` then `/cerebro-start-work` | Multi-step feature, architecture change, migration, security, data, production impact. |
 | Interrupted plan | `/cerebro-start-work` | Continue from `.cerebro/boulder.json`. |
 
+If the user explicitly invokes `/to-me-my-x-men` for ambiguous or product-shaped work, Cerebro asks whether to continue with its own judgment. On confirmation, it records assumptions in an internal Product Brief before execution.
+
 ## Layers
 
 1. Cerebro classifies the user request and reads `.cerebro/project-context.md` when it exists.

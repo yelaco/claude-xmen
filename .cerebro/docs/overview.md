@@ -31,6 +31,8 @@ Skills are optional overlays. The base workflow does not require any skill to be
 | Execution | `/cerebro-start-work` | A plan exists and should be executed or resumed. |
 | Doctor | `/cerebro-doctor` | Validate workflow health and catch command/model/effort drift. |
 
+When `/to-me-my-x-men` receives an unclear full-product prompt, it pauses and asks whether to continue with Cerebro's own judgment. If confirmed, it creates an internal Product Brief and executes from documented assumptions.
+
 ## Recommended Reading
 
 - [Cerebro Workflow](./cerebro-workflow.md)

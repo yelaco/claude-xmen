@@ -230,6 +230,8 @@ Best for clear tasks where you trust the team to figure out the details.
 
 Cerebro creates an agent team and team run manifest. Nightcrawler maps the codebase, Sage researches Prisma, Cyclops maintains the shared task list, Wolverine and Storm implement partitioned work, and reviewers challenge the result. You get a completion report.
 
+If the prompt is ambiguous or asks for a whole product without enough acceptance criteria, `/to-me-my-x-men` pauses first and asks whether to continue with Cerebro's own judgment. If you confirm, Cerebro writes an internal Product Brief, records assumptions, reviews it, and then executes.
+
 **2. Interview-first (high confidence)**
 
 Best for complex features where requirements need to be locked down before a line is written.

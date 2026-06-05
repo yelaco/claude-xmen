@@ -23,7 +23,7 @@ flowchart TB
 
 | Command | Purpose |
 |---|---|
-| `/to-me-my-x-men [task]` | Autonomous execution for clear tasks. |
+| `/to-me-my-x-men [task]` | Autonomous execution for clear tasks; asks before using Cerebro's own judgment on unclear product-shaped prompts. |
 | `/cerebro-index` | Build or refresh repository context. |
 | `/cerebro-plan [task]` | Interview-first planning with Professor X. |
 | `/cerebro-start-work` | Execute or resume the latest Cerebro plan. |
