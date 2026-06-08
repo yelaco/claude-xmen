@@ -6,7 +6,7 @@ boulder.json
 .pending-todos
 pending-todos/
 upgrade-state.json
-project-context.md
+/project-context.md
 upgrade-cache/
 
 # Accumulated wisdom is per-project
@@ -21,3 +21,7 @@ plans/**
 team-runs/**
 !team-runs/
 !team-runs/.gitkeep
+
+# Templates are part of the toolkit — always tracked, never caught by runtime patterns above
+!/templates/
+!/templates/**
