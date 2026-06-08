@@ -49,13 +49,16 @@ Before creating the team:
 
 If none of these apply, do not ask. Announce assumptions and execute.
 
-When a non-inferable blocker exists, ask ONE focused question and wait. Do not ask multiple questions at once.
+**Always ask via the `AskUserQuestion` tool — never in plain text.** Any time this command must put a question to the user (a non-inferable blocker, a HIGH-risk confirmation, a hard preference fork), use `AskUserQuestion` with structured options. Do not ask the user to "reply with X" in prose.
 
-**HIGH-risk missions are the exception to autonomy.** When the mission is classified `HIGH` risk (destructive ops, migrations against real data, production config, credentials, auth policy, billing, broad-blast-radius dependency upgrades, external mutating API calls, git history rewrites), do NOT proceed autonomously. Ask the user for explicit confirmation before doing any high-risk work, and recommend `/cerebro-plan` as the safer path:
+When a non-inferable blocker exists, ask ONE focused `AskUserQuestion` and wait. Do not stack multiple unrelated questions in one run.
 
-> This mission is HIGH risk: [one line on the blast radius]. `/to-me-my-x-men` runs autonomously, which is risky here. I recommend `/cerebro-plan` for interview-first planning with explicit approval gates before anything destructive runs. Reply `continue` to proceed autonomously anyway, or switch to `/cerebro-plan`.
+**HIGH-risk missions are the exception to autonomy.** When the mission is classified `HIGH` risk (destructive ops, migrations against real data, production config, credentials, auth policy, billing, broad-blast-radius dependency upgrades, external mutating API calls, git history rewrites), do NOT proceed autonomously. Use `AskUserQuestion` to get an explicit decision before doing any high-risk work, leading with the recommended option:
 
-If the user explicitly does not want autonomous judgment mode, recommend `/cerebro-plan` for interview-first planning.
+- **Question:** "This mission is HIGH risk: [one line on the blast radius]. `/to-me-my-x-men` runs autonomously. How should I proceed?"
+- **Options:** `Switch to /cerebro-plan (Recommended)` — interview-first planning with explicit approval gates before anything destructive runs · `Continue autonomously` — proceed at my own judgment despite the risk.
+
+If the user chooses planning, stop and direct them to `/cerebro-plan`. If they choose to continue, proceed but still pause at each individual approval gate.
 
 ### 1.5. Intent Consult (Legion + Cypher, Wave 0)
 

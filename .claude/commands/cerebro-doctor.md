@@ -92,6 +92,14 @@ rg -n "Create an agent team|agent team lead|teammate|team mailbox|shared task li
 
 Expected: each workflow command has team-mode instructions.
 
+Confirm user-facing questions go through `AskUserQuestion`, not plain-text prompts:
+
+```bash
+rg -n "AskUserQuestion" .claude/commands/cerebro-plan.md .claude/commands/to-me-my-x-men.md .claude/commands/cerebro-upgrade.md
+```
+
+Expected: `cerebro-plan`, `to-me-my-x-men`, and `cerebro-upgrade` each reference `AskUserQuestion` for their interview/confirmation prompts.
+
 ### 5. Plan and Brief Templates
 
 ```bash
