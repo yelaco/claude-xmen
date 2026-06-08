@@ -101,9 +101,11 @@ test -f .cerebro/templates/product-brief.md
 rg -n "Tech Stack Decision Log|Security Model|Environment Variable Manifest|Production Readiness Criteria" .cerebro/templates/product-brief.md
 test -f .cerebro/templates/requirements-brief.md
 rg -n "Jobs To Be Done|User Stories|Acceptance Criteria|Success Metrics|Handoff to Professor X" .cerebro/templates/requirements-brief.md
+test -f .cerebro/templates/customer-vision.md
+rg -n "Personas|Must-Haves|Deal-Breakers|Quality Bar|Acceptance Record" .cerebro/templates/customer-vision.md
 ```
 
-Expected: all required sections and task fields are present in each template. (Notepad subdirectories like `requirements/` are created at runtime and are not committed.)
+Expected: all required sections and task fields are present in each template. (Notepad subdirectories like `requirements/` and `customer/` are created at runtime and are not committed.)
 
 ### 6. Skill Policy
 

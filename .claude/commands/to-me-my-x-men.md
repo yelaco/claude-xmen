@@ -51,32 +51,39 @@ When a non-inferable blocker exists, ask ONE focused question and wait. Do not a
 
 If the user explicitly does not want autonomous judgment mode, recommend `/cerebro-plan` for interview-first planning.
 
-### 1.5. Intent Consult (Cypher, Wave 0)
+### 1.5. Intent Consult (Legion + Cypher, Wave 0)
 
-For any product-shaped or ambiguous request, intent understanding is owned by **Cypher**, the business analyst — not improvised by Cerebro. This is the front-facing phase: Cerebro and Cypher work the request together *before* the rest of the team mobilizes.
+For any product-shaped or ambiguous request, intent is owned by a **demand-side pair** at the front door — not improvised by Cerebro:
+
+- **Legion** (`legion`) — the opinionated customer. Researches the domain and best-in-class products, forms a strong customer vision (personas, must-haves, deal-breakers, quality bar), and answers "what does a great version of this actually look like?"
+- **Cypher** (`cypher`) — the business analyst. Interviews Legion and structures his desires into a testable Requirements Brief.
+
+This separation is the point: Legion *wants* (demand side); Cypher *structures* (supply side). The dialogue between them produces sharper requirements than either inventing them alone. **Legion must be demanding** — a customer proxy who rubber-stamps mediocre interpretations is worthless.
 
 **The wave-0 pattern:**
-1. Cerebro calls `TeamCreate`, then spawns **only Cypher** (`cypher-analyst`, `subagent_type: "cypher"`) with the raw user request and any quick codebase context.
-2. Cypher runs the Intent Expansion Protocol (parse the request → read the codebase → derive the product picture → decide clarify-or-assume) and writes a Requirements Brief to `.cerebro/notepads/requirements/{slug}.md` using `.cerebro/templates/requirements-brief.md`.
-3. Cypher replies with `REQUIREMENTS_READY` (file path + `CEREBRO ASSUMPTIONS` block) or `CLARIFY` (focused questions, only for non-inferable blockers).
-4. Cerebro relays any `CLARIFY` questions to the user, feeds answers back to Cypher via `SendMessage` (same agent, context intact), and iterates until the brief is locked.
-5. Cerebro announces Cypher's `CEREBRO ASSUMPTIONS` block to the user in its opening summary, then proceeds — it does not wait for approval on inferable choices.
-6. Cerebro spawns the rest of the team (wave 1). Cypher stays on as the standing requirements authority.
+1. Cerebro calls `TeamCreate`, then spawns **Legion and Cypher together** with the raw user request and any quick codebase context.
+2. Legion researches and writes a Customer Vision to `.cerebro/notepads/customer/{slug}.md` (`.cerebro/templates/customer-vision.md`), then replies `CUSTOMER_VISION_READY` with his non-negotiables and quality bar.
+3. Cypher interviews Legion directly (`SendMessage`), runs the Intent Expansion Protocol, and writes a Requirements Brief to `.cerebro/notepads/requirements/{slug}.md` (`.cerebro/templates/requirements-brief.md`). The two iterate until requirements genuinely capture the vision.
+4. Cypher replies with `REQUIREMENTS_READY` (file path + `CEREBRO ASSUMPTIONS` block) or `CLARIFY` (focused questions, only for non-inferable blockers).
+5. Cerebro relays any `CLARIFY` questions to the user, feeds answers back via `SendMessage` (same agents, context intact), and iterates until the briefs are locked.
+6. Cerebro announces the `CEREBRO ASSUMPTIONS` block to the user in its opening summary, then proceeds — it does not wait for approval on inferable choices.
+7. Cerebro spawns the rest of the team (wave 1). Cypher stays on as the requirements authority; Legion stays on for the end-of-build acceptance gate.
 
-For simple `BOUNDED` clear work where no requirements analysis is needed, Cerebro may skip the Cypher consult and classify directly.
+For simple `BOUNDED` clear work where no requirements analysis is needed, Cerebro may skip wave 0 and classify directly.
 
-The `CEREBRO ASSUMPTIONS` block (authored by Cypher, surfaced by Cerebro) looks like:
+The `CEREBRO ASSUMPTIONS` block (grounded in Legion's vision, structured by Cypher, surfaced by Cerebro) looks like:
 ```
 CEREBRO ASSUMPTIONS:
 - Primary user: individual creators, single-tenant
 - Core job: capture and organize entries quickly
 - Key screens: Dashboard, New Entry, Entry Detail, Settings
 - Success metric: time-to-first-entry under 30s
+- Quality bar (Legion): fast, keyboard-first, feels like a craft tool not a CRUD form
 - Stack direction: deferred to Professor X / §6.5 defaults
 - Non-goals: payments, teams/orgs, mobile native app
 ```
 
-Note: Cypher owns the WHAT and WHY (users, jobs, requirements, assumptions). Stack and architecture choices belong to Professor X and the Tech Stack Decision Log — Cypher defers them.
+Note the ownership chain: Legion owns the WANT and the quality bar; Cypher owns the WHAT/WHY (structured requirements); Professor X owns the HOW (stack, architecture). Each defers downstream.
 
 ### 2. Classify The Mission
 
@@ -116,7 +123,8 @@ Call `TeamCreate` with a kebab-case team name derived from the task (e.g., `inve
 For `PRODUCT_BUILD` or `AMBIGUOUS` work, create a two-phase task list:
 
 **Discovery and Product Brief**
-- Requirements (Cypher, wave 0): structured intent — users, jobs-to-be-done, user stories, acceptance criteria, success metrics, business rules, scope/non-goals, assumptions. Produced before any technical task and consumed by Professor X. (Already underway from the §1.5 Intent Consult; this task tracks it on the shared list.)
+- Customer vision (Legion, wave 0): personas, must-haves, deal-breakers, quality bar, and competitive expectations from domain research. Produced first; Cypher and Professor X build on it.
+- Requirements (Cypher, wave 0): structured intent — users, jobs-to-be-done, user stories, acceptance criteria, success metrics, business rules, scope/non-goals, assumptions. Built by interviewing Legion; consumed by Professor X. (Already underway from the §1.5 Intent Consult; this task tracks it on the shared list.)
 - Codebase reconnaissance: current stack, app entrypoints, conventions, test commands, reusable components. For greenfield: confirm empty state and check for any existing scaffolding.
 - Domain and ecosystem research: Sage researches best-in-class patterns, libraries, and conventions for this product domain and chosen stack. Include current stable versions of key dependencies.
 - Tech stack selection: using reconnaissance + research findings, document and justify every major technology choice (framework, styling, DB, ORM, auth, testing). Apply §6.5 defaults where unspecified.
@@ -142,6 +150,7 @@ For `PRODUCT_BUILD` or `AMBIGUOUS` work, create a two-phase task list:
 - Visual QA (UI projects): run the app, exercise every screen and interaction state, capture screenshots where tooling allows. Compare against the UX spec and the §0 standard. A screen that "renders" but looks generic or broken fails this gate. **Owner: Cyclops or Beast — never Storm.** The teammate who built the UI must not be its visual judge; failures route back to Storm as retry tasks.
 - Adversarial QA: a dedicated task to actively break the product — malformed input, empty datasets, oversized payloads, rapid repeated actions, direct URL manipulation, missing env vars. Every break found becomes a retry task.
 - Simplification and polish pass: review the full diff for dead code, duplicated logic, unnecessary abstraction, inconsistent naming, and leftover scaffolding; apply fixes.
+- Customer acceptance (Legion): Legion experiences the finished product as the demanding customer he defined in wave 0 and renders `ACCEPT` or `REJECT` against his Customer Vision and quality bar. Each `REJECT` gap becomes a retry task. This is the "would the user actually love and use this?" gate that correctness and plan reviews do not cover.
 - Production readiness audit: Cyclops runs the §9.5 checklist.
 
 For `BOUNDED` clear work, create only the tasks needed for the objective, but still include review and verification tasks.
@@ -150,7 +159,8 @@ Every `TaskCreate` must include `subject`, `description`, and, when useful, `act
 
 After all tasks are created, wire dependencies with `TaskUpdate addBlockedBy`:
 
-- Requirements (Cypher): no dependencies — runs first, in wave 0.
+- Customer vision (Legion): no dependencies — runs first, in wave 0.
+- Requirements (Cypher): blocked by customer vision — Cypher interviews Legion and structures his vision.
 - Discovery tasks (recon): no dependencies.
 - Domain/ecosystem research: no dependencies.
 - Product shaping: blocked by Cypher requirements.
@@ -165,15 +175,19 @@ After all tasks are created, wire dependencies with `TaskUpdate addBlockedBy`:
 - Post-implementation code review: blocked by all implementation milestones.
 - Visual QA and adversarial QA: blocked by the implementation milestones they cover.
 - Simplification and polish pass: blocked by code review, visual QA, and adversarial QA (so polish happens after retries land).
+- Customer acceptance (Legion): blocked by the polish pass — Legion judges the finished, clean product.
 - Production readiness audit: blocked by the polish pass.
-- Final verification: blocked by production readiness audit.
+- Final verification: blocked by production readiness audit AND customer acceptance (a Legion `REJECT` must be resolved via retry tasks before the run completes).
 
 ### 5. Spawn The Team
 
 Spawning happens in two waves for product-shaped or ambiguous work:
 
-**Wave 0 — Intent (spawn first, alone):**
-- `cypher-analyst` (`subagent_type: "cypher"`) — the front-facing business analyst. Cerebro spawns Cypher alone, runs the Intent Consult loop (§1.5), and waits for `REQUIREMENTS_READY` before spawning wave 1. Skip wave 0 only for simple `BOUNDED` clear work.
+**Wave 0 — Intent (spawn first, together):**
+- `legion-customer` (`subagent_type: "legion"`) — the opinionated customer proxy. Researches the domain and forms the Customer Vision; answers Cypher's interview as the demanding user.
+- `cypher-analyst` (`subagent_type: "cypher"`) — the front-facing business analyst. Interviews Legion, structures the Requirements Brief, and runs the Intent Consult loop (§1.5).
+
+Cerebro spawns Legion and Cypher together, runs the Intent Consult loop, and waits for `REQUIREMENTS_READY` before spawning wave 1. Skip wave 0 only for simple `BOUNDED` clear work.
 
 **Wave 1 — Build team (spawn in a single message once requirements are locked):**
 
@@ -188,7 +202,7 @@ Spawning happens in two waves for product-shaped or ambiguous work:
 - `beast-review` (`subagent_type: "beast"`)
 - `emma-validation` (`subagent_type: "emma-frost"`) — **mandatory for all `PRODUCT_BUILD` missions**, regardless of risk level; also include when risk is HIGH for any mission shape
 
-`cypher-analyst` from wave 0 stays on the wave-1 roster as the standing requirements authority — teammates route requirements questions to him through Cyclops.
+`cypher-analyst` and `legion-customer` from wave 0 stay on the wave-1 roster: Cypher as the standing requirements authority (teammates route requirements questions to him through Cyclops), and Legion for the end-of-build customer-acceptance gate.
 
 **Parallel implementation policy:** When spawning two Wolverines, Cyclops must assign them strictly disjoint file ownership (recorded in the team run manifest) and must never let both write the same file. If milestones are strictly serial, spawn only `wolverine-1`. Note: Wolverine todo files are written under `.cerebro/pending-todos/{team-name}/{agent-name}/{task-id}.txt` — each Wolverine uses its own spawn name (`wolverine-1`, `wolverine-2`) as the agent directory.
 
@@ -325,6 +339,7 @@ Before final completion:
 - Cyclops must report `STATUS: COMPLETE` or `STATUS: BLOCKED`.
 - Verification commands must pass (or failures are explicitly reported).
 - Production readiness checklist (§9.5) must pass for all `PRODUCT_BUILD` missions.
+- Legion's customer-acceptance verdict must be `ACCEPT` for all `PRODUCT_BUILD` missions (any `REJECT` gaps resolved via retry tasks).
 - `.cerebro/boulder.json` and relevant notepads must be updated.
 - The team run manifest must record final verification and cleanup status.
 
@@ -390,12 +405,14 @@ When the team is done:
 
 Summarize:
 - Teammates spawned and what each owned.
+- Customer Vision path (Legion) and the quality bar he set.
 - Requirements Brief path (Cypher) and the derived assumptions; whether any were corrected during execution.
 - Product Brief / plan path for product builds.
 - Tech stack decisions made and why; design direction chosen for greenfield UI.
 - Team run manifest path.
 - What changed (files created/modified).
 - Quality loop outcomes: code review findings fixed, visual QA result, adversarial QA breaks found and fixed, polish pass changes.
+- Customer-acceptance verdict (Legion): ACCEPT, and what he praised or had reworked.
 - Verification run and test results.
 - Production readiness checklist result.
 - Assumptions, risks, and blockers.

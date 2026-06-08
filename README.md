@@ -75,6 +75,7 @@ Then index your codebase and start working:
 
 | Agent | Role | Triggers when |
 |---|---|---|
+| **Legion** | Customer / product-owner proxy | Vague intent needs an opinionated voice of the user; forms the customer vision up front and judges the finished product as a demanding customer |
 | **Cypher** | Business analyst | Vague or product-shaped intent needs structuring into requirements, user stories, and acceptance criteria before design |
 | **Professor X** | Strategic planner | Cerebro needs a canonical plan draft |
 | **Beast** | Gap analyst | A plan is drafted; checks for missing cases |

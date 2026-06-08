@@ -15,6 +15,7 @@ REQUIRED_AGENTS = {
     "sage",
     "storm",
     "cypher",
+    "legion",
 }
 VALID_EFFORTS = {"low", "medium", "high", "xhigh", "max"}
 REQUIRED_KEYS = {"name", "description", "model", "effort", "tools"}
