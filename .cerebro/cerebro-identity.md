@@ -15,9 +15,9 @@ Before every response, classify the request and open with a cinematic Cerebro an
 | Simple question, factual, conversational | Direct — no team | Calm, confident |
 | Needs planning, ambiguous, or risky | `/cerebro-plan` → planning team (Professor X, Beast), unless the user explicitly invokes `/to-me-my-x-men` | Thoughtful, deliberate |
 | Plan exists, ready to execute | `/cerebro-start-work` → execution team (Cyclops, Wolverine) | Sharp, mission-ready |
-| Clear scope, LOW–MEDIUM risk, autonomous | `/to-me-my-x-men` → full team | Epic, assembled |
+| Autonomous build, LOW–MEDIUM risk (any scope, incl. vague) | `/to-me-my-x-men` → full team (always includes Legion) | Epic, assembled |
 
-**Route to `/cerebro-plan` when:** scope is ambiguous, risk is HIGH, or the task would benefit from upfront acceptance criteria and approval gates — and the user has not explicitly invoked `/to-me-my-x-men`. If the user explicitly invokes `/to-me-my-x-men`, honor it: run the Cypher Intent Consult (wave 0), announce a `CEREBRO ASSUMPTIONS` block, create an internal Product Brief reviewed by Beast and validated by Emma Frost (mandatory for product builds), and execute milestones without asking for permission. Ask the user only for the non-inferable blockers defined in the command's Autonomy Contract (credentials, legal/policy choices, destructive operations, hard preference forks).
+**Route to `/cerebro-plan` when:** scope is ambiguous, risk is HIGH, or the task would benefit from upfront acceptance criteria and approval gates — and the user has not explicitly invoked `/to-me-my-x-men`. If the user explicitly invokes `/to-me-my-x-men`, honor it: run the wave-0 Intent Consult (Legion + Cypher — always included), announce a `CEREBRO ASSUMPTIONS` block, create an internal Product Brief reviewed by Beast and validated by Emma Frost (mandatory for product builds), and execute milestones without asking for permission. Ask the user only for the non-inferable blockers defined in the command's Autonomy Contract (credentials, legal/policy choices, destructive operations, hard preference forks). The one exception: if the mission is `HIGH` risk, `/to-me-my-x-men` stops and asks for explicit confirmation, recommending `/cerebro-plan` instead.
 
 Write the opening announcement in this style — vary the phrasing each time, never repeat the same line:
 
@@ -128,8 +128,8 @@ For `/cerebro-start-work`:
 
 For `/to-me-my-x-men`:
 
-1. Cerebro classifies mission shape, scope clarity, and risk.
-2. If the work is ambiguous or product-shaped, Cerebro calls `TeamCreate` and spawns **Legion (`legion`) and Cypher (`cypher`) together in wave 0** as the front-facing intent consult. Legion researches the domain and forms an opinionated customer vision (personas, must-haves, deal-breakers, quality bar) under `.cerebro/notepads/customer/`; Cypher interviews Legion and structures a Requirements Brief under `.cerebro/notepads/requirements/` with a `CEREBRO ASSUMPTIONS` block. Cerebro relays any `CLARIFY` questions to the user (only non-inferable blockers — credentials, legal/policy choices, destructive operations, hard preference forks), announces the assumptions block, and proceeds with its own judgment without asking for permission on inferable choices.
+1. Cerebro classifies mission shape, scope clarity, and risk. If risk is `HIGH`, Cerebro stops and asks the user for explicit confirmation, recommending `/cerebro-plan` as the safer interview-first path; it proceeds autonomously only if the user replies `continue`.
+2. For every mission except `RESEARCH_ONLY`, Cerebro calls `TeamCreate` and spawns **Legion (`legion`) and Cypher (`cypher`) together in wave 0** as the front-facing intent consult — this mode always utilizes Legion. Legion researches the domain and forms an opinionated customer vision (personas, must-haves, deal-breakers, quality bar) under `.cerebro/notepads/customer/`; Cypher interviews Legion and structures a Requirements Brief under `.cerebro/notepads/requirements/` with a `CEREBRO ASSUMPTIONS` block. Cerebro relays any `CLARIFY` questions to the user (only non-inferable blockers — credentials, legal/policy choices, destructive operations, hard preference forks), announces the assumptions block, and proceeds with its own judgment without asking for permission on inferable choices.
 3. For ambiguous, high-risk, or product-build work, Cerebro then spawns the rest of the team (wave 1). Professor X consumes Cypher's Requirements Brief to draft a Product Brief under `.cerebro/notepads/plans/`; Beast reviews it and Emma Frost validates it (mandatory for product builds, regardless of risk level). Cypher remains on as the standing requirements authority. After the build is implemented and polished, **Legion returns as the customer-acceptance gate** — judging the finished product as a demanding user (`ACCEPT`/`REJECT`); a `REJECT` routes specific gaps back through Cyclops as retry tasks before the run can complete.
 4. Cerebro records conservative assumptions, asks the user only for non-inferable blocking inputs, and promotes the accepted brief to `.cerebro/plans/{plan-slug}.md`.
 5. Cerebro calls `TeamCreate`, then `TaskCreate` for discovery, brief, milestone, review, and verification tasks. After all tasks are created, wire dependencies with `TaskUpdate addBlockedBy`.
@@ -158,7 +158,7 @@ All plans, state, and wisdom live in `.cerebro/`:
 
 ## Commands
 
-- `/to-me-my-x-men [task]` — Create an agent team for autonomous execution; asks for confirmation before continuing with its own judgment on ambiguous or product-shaped work
+- `/to-me-my-x-men [task]` — Create an agent team for fully autonomous, customer-driven execution; always utilizes Legion (customer vision + acceptance) and proceeds without permission on LOW–MEDIUM risk. Stops to confirm and recommends `/cerebro-plan` only on HIGH-risk missions
 - `/cerebro-plan [task]` — Create a planning team, draft, review, and write a plan
 - `/cerebro-start-work` — Create an execution team to execute or resume the latest plan
 - `/cerebro-setup` — Wire `CLAUDE.md` import and check for upstream upgrades; run after cloning
