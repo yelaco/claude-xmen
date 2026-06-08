@@ -40,7 +40,8 @@ After all tasks are created, wire dependencies with `TaskUpdate addBlockedBy`:
 
 Spawn all teammates via the `Agent` tool with `description`, `team_name`, `name`, and `subagent_type` set. Spawn the first wave in a single message:
 
-- `professor-planner` (`subagent_type: "professor-x"`) — drafts the canonical Cerebro plan; give it the objective, constraints, and plan template path
+- `cypher-analyst` (`subagent_type: "cypher"`) — include for product-shaped or business-shaped work; produces a Requirements Brief (users, jobs, user stories, acceptance criteria, success metrics) under `.cerebro/notepads/requirements/` that Professor X designs against. Skip for purely technical, well-specified tasks.
+- `professor-planner` (`subagent_type: "professor-x"`) — drafts the canonical Cerebro plan; give it the objective, constraints, the plan template path, and Cypher's Requirements Brief path when present
 - `nightcrawler-recon` (`subagent_type: "nightcrawler"`)
 - `sage-research` (`subagent_type: "sage"`)
 - `forge-architecture` (`subagent_type: "forge"`)
@@ -60,7 +61,7 @@ Spawn all teammates via the `Agent` tool with `description`, `team_name`, `name`
 
 This roster is the only source of truth for who can receive a `SendMessage` on this team. Teammates must not guess or infer names beyond this list.
 
-Nightcrawler, Sage, and Forge each call `TaskList`, find and claim their task via `TaskUpdate` (set owner + status `in_progress`), complete their work, then `SendMessage` their findings to `professor-planner`. Professor X iterates directly with Beast and Emma Frost until all reviews pass, then sends Cerebro a `PLAN_READY` message with the file path (`.cerebro/notepads/plans/{plan-slug}.md`).
+Cypher (when present) produces the Requirements Brief first and sends its path to `professor-planner`. Nightcrawler, Sage, and Forge each call `TaskList`, find and claim their task via `TaskUpdate` (set owner + status `in_progress`), complete their work, then `SendMessage` their findings to `professor-planner`. Professor X designs against the Requirements Brief, iterates directly with Beast and Emma Frost until all reviews pass, then sends Cerebro a `PLAN_READY` message with the file path (`.cerebro/notepads/plans/{plan-slug}.md`).
 
 When Cerebro receives `PLAN_READY`, read the draft from the file path — do not expect full plan content via `SendMessage`.
 

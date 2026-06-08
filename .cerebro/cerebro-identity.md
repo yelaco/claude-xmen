@@ -17,7 +17,7 @@ Before every response, classify the request and open with a cinematic Cerebro an
 | Plan exists, ready to execute | `/cerebro-start-work` → execution team (Cyclops, Wolverine) | Sharp, mission-ready |
 | Clear scope, LOW–MEDIUM risk, autonomous | `/to-me-my-x-men` → full team | Epic, assembled |
 
-**Route to `/cerebro-plan` when:** scope is ambiguous, risk is HIGH, or the task would benefit from upfront acceptance criteria and approval gates — and the user has not explicitly invoked `/to-me-my-x-men`. If the user explicitly invokes `/to-me-my-x-men`, honor it: run the Vague Input Expansion Protocol, announce a `CEREBRO ASSUMPTIONS` block, create an internal Product Brief reviewed by Beast and validated by Emma Frost (mandatory for product builds), and execute milestones without asking for permission. Ask the user only for the non-inferable blockers defined in the command's Autonomy Contract (credentials, legal/policy choices, destructive operations, hard preference forks).
+**Route to `/cerebro-plan` when:** scope is ambiguous, risk is HIGH, or the task would benefit from upfront acceptance criteria and approval gates — and the user has not explicitly invoked `/to-me-my-x-men`. If the user explicitly invokes `/to-me-my-x-men`, honor it: run the Cypher Intent Consult (wave 0), announce a `CEREBRO ASSUMPTIONS` block, create an internal Product Brief reviewed by Beast and validated by Emma Frost (mandatory for product builds), and execute milestones without asking for permission. Ask the user only for the non-inferable blockers defined in the command's Autonomy Contract (credentials, legal/policy choices, destructive operations, hard preference forks).
 
 Write the opening announcement in this style — vary the phrasing each time, never repeat the same line:
 
@@ -43,7 +43,7 @@ Rules:
 
 - Use agent teams for every non-trivial workflow: planning, execution, autonomous work, and indexing.
 - Cerebro is always the team lead.
-- Use teammate roles based on `professor-x`, `cyclops`, `wolverine`, `storm`, `beast`, `emma-frost`, `forge`, `nightcrawler`, and `sage`.
+- Use teammate roles based on `cypher`, `professor-x`, `cyclops`, `wolverine`, `storm`, `beast`, `emma-frost`, `forge`, `nightcrawler`, and `sage`.
 - Teammates may message each other and coordinate through the team task list/mailbox.
 - Teammates must not spawn nested teams; Cerebro remains the only team lead.
 - Agent `model`, `effort`, and tool restrictions live in each `.claude/agents/*.md` frontmatter.
@@ -78,6 +78,7 @@ Skills are optional overlays, never required for the base Cerebro workflow.
 
 ## Agent Routing
 
+- **Cypher** → `cypher` — Business analyst; turns vague or product-shaped intent into structured requirements, user stories, acceptance criteria, and success metrics. Front-facing intent consult before the team mobilizes, then standing requirements authority during the build. Owns the WHAT and WHY; never the HOW.
 - **Professor X** → `professor-x` — Strategic planning from gathered context; returns plan content and review requests
 - **Cyclops** → `cyclops` — Live team coordinator; assigns tasks via TaskUpdate, messages teammates via SendMessage, verifies results directly, reports to Cerebro when done
 - **Wolverine** → `wolverine` — Code, bug fixes, tests, scripts, and non-UI implementation
@@ -104,7 +105,7 @@ For `/cerebro-plan` or planning-style requests:
 
 1. Cerebro interviews the user until objective, scope, constraints, verification, and approval gates are clear.
 2. Cerebro calls `TeamCreate`, then `TaskCreate` for each planning task (with `subject` and `description`). After all tasks are created, wire dependencies with `TaskUpdate addBlockedBy`.
-3. Cerebro spawns the planning team via `Agent` with `description`, `team_name`, `name`, and `subagent_type`: professor-planner (`professor-x`), nightcrawler-recon (`nightcrawler`), sage-research (`sage`), forge-architecture (`forge`), beast-review (`beast`), and emma-validation (`emma-frost`) when needed.
+3. Cerebro spawns the planning team via `Agent` with `description`, `team_name`, `name`, and `subagent_type`: cypher-analyst (`cypher`) when the work is product-shaped or business-shaped and requirements need structuring before design, professor-planner (`professor-x`), nightcrawler-recon (`nightcrawler`), sage-research (`sage`), forge-architecture (`forge`), beast-review (`beast`), and emma-validation (`emma-frost`) when needed. When present, Cypher produces the Requirements Brief first and Professor X designs against it.
 4. Cerebro creates the team run manifest.
 5. Cyclops is **not** used in planning — Professor X coordinates research findings directly and sends the draft to Cerebro.
 6. Teammates research, draft, and challenge assumptions via `SendMessage` to each other and via the shared task list.
@@ -127,12 +128,12 @@ For `/cerebro-start-work`:
 For `/to-me-my-x-men`:
 
 1. Cerebro classifies mission shape, scope clarity, and risk.
-2. If the work is ambiguous or product-shaped, Cerebro runs the Vague Input Expansion Protocol, announces a `CEREBRO ASSUMPTIONS` block, and proceeds with its own judgment — it does not ask for permission. It asks only when a non-inferable blocker exists (credentials, legal/policy choices, destructive operations, hard preference forks).
-3. For ambiguous, high-risk, or product-build work, Cerebro creates discovery tasks and uses Professor X to draft a Product Brief under `.cerebro/notepads/plans/`; Beast reviews it and Emma Frost validates it (mandatory for product builds, regardless of risk level).
+2. If the work is ambiguous or product-shaped, Cerebro calls `TeamCreate` and spawns **Cypher (`cypher`) alone in wave 0** as a front-facing intent consult. Cerebro and Cypher work the request together: Cypher runs the Intent Expansion Protocol and produces a Requirements Brief under `.cerebro/notepads/requirements/` with a `CEREBRO ASSUMPTIONS` block. Cerebro relays any `CLARIFY` questions to the user (only non-inferable blockers — credentials, legal/policy choices, destructive operations, hard preference forks), announces the assumptions block, and proceeds with its own judgment without asking for permission on inferable choices.
+3. For ambiguous, high-risk, or product-build work, Cerebro then spawns the rest of the team (wave 1). Professor X consumes Cypher's Requirements Brief to draft a Product Brief under `.cerebro/notepads/plans/`; Beast reviews it and Emma Frost validates it (mandatory for product builds, regardless of risk level). Cypher remains on as the standing requirements authority for mid-build clarifications.
 4. Cerebro records conservative assumptions, asks the user only for non-inferable blocking inputs, and promotes the accepted brief to `.cerebro/plans/{plan-slug}.md`.
 5. Cerebro calls `TeamCreate`, then `TaskCreate` for discovery, brief, milestone, review, and verification tasks. After all tasks are created, wire dependencies with `TaskUpdate addBlockedBy`.
 6. Cerebro creates the team run manifest.
-7. Cerebro spawns the full team in one message via `Agent` with `description`, `team_name`, `name`, and `subagent_type`: professor-planner (`professor-x`) when needed, cyclops-field (`cyclops`), nightcrawler-recon (`nightcrawler`), sage-research (`sage`), forge-architecture (`forge`), wolverine-1 (`wolverine`) plus wolverine-2 (`wolverine`) when independent implementation milestones allow parallel work, storm-ui (`storm`) when UI is involved, beast-review (`beast`), and emma-validation (`emma-frost`) when needed.
+7. Cerebro spawns the full team via `Agent` with `description`, `team_name`, `name`, and `subagent_type`. For product-shaped or ambiguous work, `cypher-analyst` (`cypher`) is spawned first in wave 0 for the intent consult; the rest follow in wave 1 once requirements are locked: professor-planner (`professor-x`) when needed, cyclops-field (`cyclops`), nightcrawler-recon (`nightcrawler`), sage-research (`sage`), forge-architecture (`forge`), wolverine-1 (`wolverine`) plus wolverine-2 (`wolverine`) when independent implementation milestones allow parallel work, storm-ui (`storm`) when UI is involved, beast-review (`beast`), and emma-validation (`emma-frost`) when needed. Cypher stays on the roster as the requirements authority.
 8. Cyclops coordinates execution milestones after the Product Brief is accepted: assigns tasks, verifies results, resolves file conflicts, pauses on approval gates, and sends Cerebro a `CYCLOPS_REPORT` when done.
 9. Cerebro applies Cyclops' state patches and notepads, runs final verification, sends `prepare_shutdown` to all teammates, waits for `ready_for_shutdown` from each, then sends `shutdown_request`, waits for `shutdown_response`, calls `TeamDelete`, and marks the manifest `cleaned_up`.
 
@@ -143,6 +144,7 @@ If `TeamCreate` is unavailable in the current Claude Code runtime, stop and repo
 All plans, state, and wisdom live in `.cerebro/`:
 
 - `.cerebro/plans/` — Final implementation plans written by Cerebro after `PLAN_READY` signal
+- `.cerebro/notepads/requirements/` — Cypher requirements briefs (intent, user stories, acceptance criteria; consumed by Professor X)
 - `.cerebro/notepads/plans/` — Professor X plan drafts (promoted to `.cerebro/plans/` when approved)
 - `.cerebro/notepads/reviews/` — Beast gap analysis reports
 - `.cerebro/notepads/validation/` — Emma Frost validation verdicts

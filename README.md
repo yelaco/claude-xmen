@@ -62,7 +62,7 @@ Then index your codebase and start working:
 |---|---|
 | `/cerebro-setup` | Wire `CLAUDE.md`, verify the installation, and check for upstream upgrades. Run after cloning. |
 | `/to-me-my-x-men [task]` | Full autonomous mode. Cerebro creates an agent team, assigns teammates, lets them coordinate, then verifies and synthesizes the result. |
-| `/cerebro-plan [task]` | Interview-based planning. Cerebro creates a planning team so Professor X, Nightcrawler, Sage, Forge, Beast, and Emma Frost can coordinate. |
+| `/cerebro-plan [task]` | Interview-based planning. Cerebro creates a planning team so Cypher (for product-shaped work), Professor X, Nightcrawler, Sage, Forge, Beast, and Emma Frost can coordinate. |
 | `/cerebro-start-work` | Execute the latest plan. Cerebro creates an execution team coordinated by Cyclops. |
 | `/cerebro-index` | Build `.cerebro/project-context.md` with an indexing team. |
 | `/cerebro-doctor` | Validate command names, native agent configuration, plan/state schemas, task result hooks, and stop hook health. |
@@ -75,6 +75,7 @@ Then index your codebase and start working:
 
 | Agent | Role | Triggers when |
 |---|---|---|
+| **Cypher** | Business analyst | Vague or product-shaped intent needs structuring into requirements, user stories, and acceptance criteria before design |
 | **Professor X** | Strategic planner | Cerebro needs a canonical plan draft |
 | **Beast** | Gap analyst | A plan is drafted; checks for missing cases |
 | **Emma Frost** | Plan reviewer | High-stakes work; validates OKAY or REJECT |

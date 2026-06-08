@@ -92,14 +92,18 @@ rg -n "Create an agent team|agent team lead|teammate|team mailbox|shared task li
 
 Expected: each workflow command has team-mode instructions.
 
-### 5. Plan Template
+### 5. Plan and Brief Templates
 
 ```bash
 test -f .cerebro/templates/plan.md
 rg -n "Risk Level|Approval Gates|Acceptance Criteria|Owner:|TDD:|Verify:|Rollback / Recovery" .cerebro/templates/plan.md
+test -f .cerebro/templates/product-brief.md
+rg -n "Tech Stack Decision Log|Security Model|Environment Variable Manifest|Production Readiness Criteria" .cerebro/templates/product-brief.md
+test -f .cerebro/templates/requirements-brief.md
+rg -n "Jobs To Be Done|User Stories|Acceptance Criteria|Success Metrics|Handoff to Professor X" .cerebro/templates/requirements-brief.md
 ```
 
-Expected: all required sections and task fields are present.
+Expected: all required sections and task fields are present in each template. (Notepad subdirectories like `requirements/` are created at runtime and are not committed.)
 
 ### 6. Skill Policy
 

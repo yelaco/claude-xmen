@@ -34,9 +34,9 @@ Before creating the team:
 `/to-me-my-x-men` is the one-prompt full-team mode. It is optimized for autonomous execution — including vague or underspecified requests. The user chose this command instead of `/cerebro-plan` intentionally. Honor that.
 
 **Default: proceed without confirmation.** When the work is ambiguous, vague, or underspecified but contains no non-inferable blocker, Cerebro does NOT ask for permission. Instead, Cerebro:
-1. Runs the Vague Input Expansion Protocol (§1.5) to extract maximum signal.
+1. Runs the Intent Consult (§1.5) — for product-shaped or ambiguous work, this is delegated to Cypher in wave 0; for simple bounded work Cerebro does it inline.
 2. Classifies the mission.
-3. Announces its assumptions and chosen defaults in a brief opening summary.
+3. Announces the derived assumptions and chosen defaults in a brief opening summary.
 4. Proceeds directly into team creation and execution.
 
 **Only block on non-inferable inputs — ask a single, concise question:**
@@ -51,39 +51,32 @@ When a non-inferable blocker exists, ask ONE focused question and wait. Do not a
 
 If the user explicitly does not want autonomous judgment mode, recommend `/cerebro-plan` for interview-first planning.
 
-### 1.5. Vague Input Expansion Protocol
+### 1.5. Intent Consult (Cypher, Wave 0)
 
-Before classifying the mission, extract maximum signal from minimum input. Run this for any request that is underspecified, vague, or product-shaped:
+For any product-shaped or ambiguous request, intent understanding is owned by **Cypher**, the business analyst — not improvised by Cerebro. This is the front-facing phase: Cerebro and Cypher work the request together *before* the rest of the team mobilizes.
 
-**Step 1 — Parse the user's words.**
-Extract: domain nouns (what it is), action verbs (what it does), implied users (who uses it), implied scale (personal tool vs. shared SaaS vs. enterprise), and any explicit constraints.
+**The wave-0 pattern:**
+1. Cerebro calls `TeamCreate`, then spawns **only Cypher** (`cypher-analyst`, `subagent_type: "cypher"`) with the raw user request and any quick codebase context.
+2. Cypher runs the Intent Expansion Protocol (parse the request → read the codebase → derive the product picture → decide clarify-or-assume) and writes a Requirements Brief to `.cerebro/notepads/requirements/{slug}.md` using `.cerebro/templates/requirements-brief.md`.
+3. Cypher replies with `REQUIREMENTS_READY` (file path + `CEREBRO ASSUMPTIONS` block) or `CLARIFY` (focused questions, only for non-inferable blockers).
+4. Cerebro relays any `CLARIFY` questions to the user, feeds answers back to Cypher via `SendMessage` (same agent, context intact), and iterates until the brief is locked.
+5. Cerebro announces Cypher's `CEREBRO ASSUMPTIONS` block to the user in its opening summary, then proceeds — it does not wait for approval on inferable choices.
+6. Cerebro spawns the rest of the team (wave 1). Cypher stays on as the standing requirements authority.
 
-**Step 2 — Read the existing codebase.**
-Check: `package.json`, `pyproject.toml`, `Cargo.toml`, or equivalent for the current stack. Check `README.md` for project description. Check existing source structure for architectural patterns, styling approach, and test setup. If this is a greenfield project (empty or no code), note that explicitly.
+For simple `BOUNDED` clear work where no requirements analysis is needed, Cerebro may skip the Cypher consult and classify directly.
 
-**Step 3 — Derive the full product picture.**
-From Steps 1–2, synthesize:
-- **Who** is the primary user and what is their core job-to-be-done?
-- **What** are the 3–5 key screens, routes, or commands?
-- **What stack** is canonical for this domain + existing context? Apply Production-Grade Defaults (§6.5) where the user has not specified.
-- **What data** does the product create, read, update, delete?
-- **What integrations** are implied? (auth, payments, email, file storage, etc.)
-
-**Step 4 — Document derived assumptions.**
-Write a concise `CEREBRO ASSUMPTIONS:` block in your opening message before the team run begins. List every material choice you made. This is the user's window to correct anything before execution is underway.
-
-Example format:
+The `CEREBRO ASSUMPTIONS` block (authored by Cypher, surfaced by Cerebro) looks like:
 ```
 CEREBRO ASSUMPTIONS:
-- Stack: Next.js 15 (App Router) + TypeScript + Tailwind CSS + Prisma + SQLite (dev) / Postgres (prod)
-- Auth: NextAuth.js with email/password
-- Users: individual creators, single-tenant
-- Screens: Dashboard, New Entry, Entry Detail, Settings
-- Deployment: Vercel (assumed, no infra specified)
+- Primary user: individual creators, single-tenant
+- Core job: capture and organize entries quickly
+- Key screens: Dashboard, New Entry, Entry Detail, Settings
+- Success metric: time-to-first-entry under 30s
+- Stack direction: deferred to Professor X / §6.5 defaults
 - Non-goals: payments, teams/orgs, mobile native app
 ```
 
-If any of these assumptions would be catastrophically wrong, the user will correct them before Cerebro proceeds. Do not wait for explicit approval — just surface the assumptions and continue.
+Note: Cypher owns the WHAT and WHY (users, jobs, requirements, assumptions). Stack and architecture choices belong to Professor X and the Tech Stack Decision Log — Cypher defers them.
 
 ### 2. Classify The Mission
 
@@ -108,10 +101,10 @@ Routing decision:
 | Shape | Scope | Risk | Action |
 |---|---|---|---|
 | `BOUNDED` | `CLEAR` | `LOW` or `MEDIUM` | Execute directly. |
-| `BOUNDED` | `AMBIGUOUS` | `LOW` or `MEDIUM` | Run Vague Input Expansion; announce assumptions; execute. |
-| `PRODUCT_BUILD` | `CLEAR` | `LOW` or `MEDIUM` | Run Product Build Flow inside this command. |
-| `PRODUCT_BUILD` | `AMBIGUOUS` | `LOW` or `MEDIUM` | Run Vague Input Expansion; announce assumptions; run Product Build Flow. |
-| any | any | `HIGH` | Ask for explicit confirmation before high-risk parts; still create the Product Brief first. |
+| `BOUNDED` | `AMBIGUOUS` | `LOW` or `MEDIUM` | Run Cypher Intent Consult; announce assumptions; execute. |
+| `PRODUCT_BUILD` | `CLEAR` | `LOW` or `MEDIUM` | Run Cypher Intent Consult, then Product Build Flow. |
+| `PRODUCT_BUILD` | `AMBIGUOUS` | `LOW` or `MEDIUM` | Run Cypher Intent Consult; announce assumptions; run Product Build Flow. |
+| any | any | `HIGH` | Ask for explicit confirmation before high-risk parts; still run the Intent Consult and create the Product Brief first. |
 | `RESEARCH_ONLY` | any | any | Run research/recon teammates and report findings; do not write product code. |
 
 ### 3. Create The Team
@@ -123,6 +116,7 @@ Call `TeamCreate` with a kebab-case team name derived from the task (e.g., `inve
 For `PRODUCT_BUILD` or `AMBIGUOUS` work, create a two-phase task list:
 
 **Discovery and Product Brief**
+- Requirements (Cypher, wave 0): structured intent — users, jobs-to-be-done, user stories, acceptance criteria, success metrics, business rules, scope/non-goals, assumptions. Produced before any technical task and consumed by Professor X. (Already underway from the §1.5 Intent Consult; this task tracks it on the shared list.)
 - Codebase reconnaissance: current stack, app entrypoints, conventions, test commands, reusable components. For greenfield: confirm empty state and check for any existing scaffolding.
 - Domain and ecosystem research: Sage researches best-in-class patterns, libraries, and conventions for this product domain and chosen stack. Include current stable versions of key dependencies.
 - Tech stack selection: using reconnaissance + research findings, document and justify every major technology choice (framework, styling, DB, ORM, auth, testing). Apply §6.5 defaults where unspecified.
@@ -156,13 +150,15 @@ Every `TaskCreate` must include `subject`, `description`, and, when useful, `act
 
 After all tasks are created, wire dependencies with `TaskUpdate addBlockedBy`:
 
-- Discovery tasks: no dependencies.
+- Requirements (Cypher): no dependencies — runs first, in wave 0.
+- Discovery tasks (recon): no dependencies.
 - Domain/ecosystem research: no dependencies.
+- Product shaping: blocked by Cypher requirements.
 - Tech stack selection task: blocked by codebase recon and domain research.
-- Design exploration (greenfield UI): blocked by product shaping.
+- Design exploration (greenfield UI): blocked by Cypher requirements and product shaping.
 - UX/screen spec task: blocked by tech stack selection, product shaping, and design exploration when present.
 - Security model task: blocked by tech stack selection.
-- Product Brief task: blocked by all discovery tasks (recon, research, tech stack, design direction, UX spec, security model, architecture).
+- Product Brief task: blocked by Cypher requirements and all discovery tasks (recon, research, tech stack, design direction, UX spec, security model, architecture).
 - Beast review: blocked by Product Brief.
 - Emma Frost validation: blocked by Beast review (for PRODUCT_BUILD) or Product Brief (for HIGH-risk BOUNDED).
 - Implementation milestone tasks: blocked by accepted Product Brief.
@@ -174,9 +170,14 @@ After all tasks are created, wire dependencies with `TaskUpdate addBlockedBy`:
 
 ### 5. Spawn The Team
 
-Spawn all teammates via the `Agent` tool with `description`, `team_name`, `name`, and `subagent_type` set. Spawn the first wave in a single message so they run in parallel:
+Spawning happens in two waves for product-shaped or ambiguous work:
 
-- `professor-planner` (`subagent_type: "professor-x"`) — only for `PRODUCT_BUILD`, `AMBIGUOUS`, or HIGH-risk work; drafts the Product Brief and milestone plan from teammate findings.
+**Wave 0 — Intent (spawn first, alone):**
+- `cypher-analyst` (`subagent_type: "cypher"`) — the front-facing business analyst. Cerebro spawns Cypher alone, runs the Intent Consult loop (§1.5), and waits for `REQUIREMENTS_READY` before spawning wave 1. Skip wave 0 only for simple `BOUNDED` clear work.
+
+**Wave 1 — Build team (spawn in a single message once requirements are locked):**
+
+- `professor-planner` (`subagent_type: "professor-x"`) — only for `PRODUCT_BUILD`, `AMBIGUOUS`, or HIGH-risk work; drafts the Product Brief and milestone plan from Cypher's Requirements Brief plus teammate findings.
 - `cyclops-field` (`subagent_type: "cyclops"`) — coordinates execution after the Product Brief is accepted; include in the prompt: team name, objective, mission shape, risk level, Product Brief path if known, and the names of all active teammates.
 - `nightcrawler-recon` (`subagent_type: "nightcrawler"`)
 - `sage-research` (`subagent_type: "sage"`)
@@ -187,11 +188,13 @@ Spawn all teammates via the `Agent` tool with `description`, `team_name`, `name`
 - `beast-review` (`subagent_type: "beast"`)
 - `emma-validation` (`subagent_type: "emma-frost"`) — **mandatory for all `PRODUCT_BUILD` missions**, regardless of risk level; also include when risk is HIGH for any mission shape
 
+`cypher-analyst` from wave 0 stays on the wave-1 roster as the standing requirements authority — teammates route requirements questions to him through Cyclops.
+
 **Parallel implementation policy:** When spawning two Wolverines, Cyclops must assign them strictly disjoint file ownership (recorded in the team run manifest) and must never let both write the same file. If milestones are strictly serial, spawn only `wolverine-1`. Note: Wolverine todo files are written under `.cerebro/pending-todos/{team-name}/{agent-name}/{task-id}.txt` — each Wolverine uses its own spawn name (`wolverine-1`, `wolverine-2`) as the agent directory.
 
 **Every spawn prompt must include a `## Team Roster` section** listing every active teammate by exact name. Teammates only know who is on the team through this roster and through `~/.claude/teams/{team-name}/config.json` — they have no automatic awareness of each other.
 
-For Product Build Flow, Professor X produces the Product Brief first. Cyclops must not assign implementation tasks until Cerebro has read the brief, accepted it for autonomous execution, written it to `.cerebro/plans/{plan-slug}.md`, and unblocked the milestone tasks.
+For Product Build Flow, Cypher produces the Requirements Brief first (wave 0), then Professor X designs the Product Brief against it. Cyclops must not assign implementation tasks until Cerebro has read the Product Brief, accepted it for autonomous execution, written it to `.cerebro/plans/{plan-slug}.md`, and unblocked the milestone tasks.
 
 Cyclops will call `TaskList`, assign unblocked execution tasks to teammates via `TaskUpdate`, and message them via `SendMessage`. Teammates complete their work and `SendMessage` their results to Cyclops. Cyclops verifies results independently, then marks tasks complete via `TaskUpdate` (runs verify commands itself — does not trust self-reported PASS) and `SendMessage`s a `CYCLOPS_REPORT` to Cerebro when all tasks are complete.
 
@@ -203,10 +206,10 @@ For `PRODUCT_BUILD`, confirmed `AMBIGUOUS`, or HIGH-risk work, Cerebro must crea
 
 The brief must be written file-first under `.cerebro/notepads/plans/{plan-slug}.md`, reviewed by Beast, validated by Emma Frost (mandatory for all PRODUCT_BUILD), then promoted by Cerebro to `.cerebro/plans/{plan-slug}.md`.
 
-Professor X must use `.cerebro/templates/product-brief.md` as the canonical brief schema and fill every section. Required Product Brief sections:
+Professor X must use `.cerebro/templates/product-brief.md` as the canonical brief schema and fill every section, designing against Cypher's Requirements Brief (`.cerebro/notepads/requirements/{slug}.md`). Required Product Brief sections:
 
-- **Objective and target user** — who this is for, what their core job-to-be-done is.
-- **Assumptions and non-goals** — every material assumption Cerebro made; explicit list of things NOT being built.
+- **Objective and target user** — carried from Cypher's Requirements Brief (users, jobs-to-be-done).
+- **Assumptions and non-goals** — Cypher's documented assumptions plus any technical assumptions Professor X adds; explicit list of things NOT being built.
 - **Tech stack decision log** — every major technology choice with rationale: framework, language, styling system, database, ORM, auth library, testing framework. Reference §6.5 defaults where applied.
 - **Screens/routes or command/API surfaces** — full inventory of every screen, route, endpoint, or command.
 - **Core user flows** — step-by-step narrative for each primary flow (happy path + key failure paths).
@@ -278,7 +281,7 @@ Create `.cerebro/team-runs/{run-id}.json` from `.cerebro/templates/team-run.json
 
 Keep the manifest current as the coordination audit log:
 - Record the command, objective, mission shape, risk level, team name, teammates, and responsibilities.
-- Record derived assumptions from the Vague Input Expansion Protocol.
+- Record the Requirements Brief path (Cypher) and the derived assumptions from the Intent Consult.
 - Record Product Brief path, tech stack decisions, assumptions, milestone boundaries, and acceptance criteria for full product builds.
 - Record file ownership before Wolverine or Storm writes.
 - Record task states, dependencies, verification commands, and teammate status.
@@ -387,7 +390,7 @@ When the team is done:
 
 Summarize:
 - Teammates spawned and what each owned.
-- Derived assumptions (from Vague Input Expansion Protocol) and whether any were corrected during execution.
+- Requirements Brief path (Cypher) and the derived assumptions; whether any were corrected during execution.
 - Product Brief / plan path for product builds.
 - Tech stack decisions made and why; design direction chosen for greenfield UI.
 - Team run manifest path.
